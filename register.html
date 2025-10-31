@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Register</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="container">
+    <h1>Create Account</h1>
+
+    <input type="email" id="regEmail" placeholder="Email" required>
+    <input type="password" id="regPassword" placeholder="Password (6+ chars)" required>
+
+    <button id="btnRegister">Register</button>
+
+    <p class="small">Already have an account?
+      <a href="login.html">Login here</a>
+    </p>
+
+    <p id="regMsg" class="small"></p>
+  </div>
+
+  <!-- Firebase App + Auth -->
+  <script type="module">
+    import { registerUser } from "./scripts/auth.js";
+
+    document.getElementById("btnRegister").addEventListener("click", async () => {
+      const email = document.getElementById("regEmail").value;
+      const password = document.getElementById("regPassword").value;
+      const msg = document.getElementById("regMsg");
+
+      msg.textContent = "";
+
+      try {
+        await registerUser(email, password);
+        msg.textContent = "Registration successful! Check your email for verification.";
+        msg.className = "small success";
+      } catch (error) {
+        msg.textContent = error.message;
+        msg.className = "small error";
+      }
+    });
+  </script>
+</body>
+</html>
