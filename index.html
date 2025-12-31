@@ -1,17 +1,61 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <title>Welcome • Crisprus Auth</title>
-  <link rel="stylesheet" href="styles.css" />
-</head>
-<body>
-  <div class="container">
-    <h1>Welcome to Crisprus Akshay is gay</h1>
-    <p class="small">Secure login system using Firebase Authentication</p>
+<meta charset="UTF-8">
+<title>The Dark Room</title>
 
-    <a href="register.html"><button>Create Account</button></a>
-    <a href="login.html"><button>Login</button></a>
-  </div>
+<style>
+    body {
+        background-color: black;
+        color: #ff0000;
+        font-family: monospace;
+        text-align: center;
+        margin-top: 100px;
+    }
+    button {
+        background-color: #550000;
+        color: white;
+        border: none;
+        padding: 12px 20px;
+        font-size: 16px;
+        margin: 10px;
+        cursor: pointer;
+    }
+    button:hover {
+        background-color: red;
+    }
+    #game {
+        font-size: 20px;
+        margin-bottom: 30px;
+    }
+</style>
+</head>
+
+<body>
+
+<h1>👁️ THE DARK ROOM 👁️</h1>
+<div id="game">You wake up in a dark room. You hear breathing...</div>
+
+<button onclick="left()">Go Left</button>
+<button onclick="right()">Go Right</button>
+<button onclick="stay()">Stay Still</button>
+
+<script>
+function left() {
+    document.getElementById("game").innerHTML =
+    "You walk left... a shadow moves behind you. RUN!";
+}
+
+function right() {
+    document.getElementById("game").innerHTML =
+    "You open a door... IT SLAMS SHUT! A scream echoes!";
+}
+
+function stay() {
+    document.getElementById("game").innerHTML =
+    "You stay still... the breathing stops... YOU ARE NOT ALONE.";
+}
+</script>
+
 </body>
 </html>
