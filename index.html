@@ -1,17 +1,38 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>Minecraft Control</title>
+  <meta charset="UTF-8">
+  <title>Minecraft Server Control</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #121212;
+      color: white;
+      text-align: center;
+      padding-top: 80px;
+    }
+    button {
+      font-size: 18px;
+      padding: 15px 30px;
+      margin: 10px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+    .start { background: #2ecc71; }
+    .stop  { background: #e74c3c; }
+  </style>
 </head>
 <body>
-  <h2>Minecraft Server Control</h2>
 
-  <button onclick="send('start')">Start Server</button>
-  <button onclick="send('stop')">Stop Server</button>
+  <h1>Minecraft Server Control</h1>
+
+  <button class="start" onclick="send('start')">Start Server</button>
+  <button class="stop" onclick="send('stop')">Stop Server</button>
 
   <script>
     function send(action) {
-      fetch("http://YOUR_PUBLIC_API/command", {
+      fetch("https://crisprus.run.place/command", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -19,9 +40,13 @@
         },
         body: JSON.stringify({ action: action })
       })
-      .then(r => alert("Sent: " + action))
-      .catch(e => alert("Error"));
+      .then(r => {
+        if (!r.ok) throw new Error("Failed");
+        alert("Sent: " + action);
+      })
+      .catch(e => alert("Error sending command"));
     }
   </script>
+
 </body>
 </html>
