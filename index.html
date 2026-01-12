@@ -1,61 +1,27 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-<meta charset="UTF-8">
-<title>The Dark Room</title>
-
-<style>
-    body {
-        background-color: black;
-        color: #ff0000;
-        font-family: monospace;
-        text-align: center;
-        margin-top: 100px;
-    }
-    button {
-        background-color: #550000;
-        color: white;
-        border: none;
-        padding: 12px 20px;
-        font-size: 16px;
-        margin: 10px;
-        cursor: pointer;
-    }
-    button:hover {
-        background-color: red;
-    }
-    #game {
-        font-size: 20px;
-        margin-bottom: 30px;
-    }
-</style>
+  <title>Minecraft Control</title>
 </head>
-
 <body>
+  <h2>Minecraft Server Control</h2>
 
-<h1>👁️ THE DARK ROOM 👁️</h1>
-<div id="game">You wake up in a dark room. You hear breathing...</div>
+  <button onclick="send('start')">Start Server</button>
+  <button onclick="send('stop')">Stop Server</button>
 
-<button onclick="left()">Go Left</button>
-<button onclick="right()">Go Right</button>
-<button onclick="stay()">Stay Still</button>
-
-<script>
-function left() {
-    document.getElementById("game").innerHTML =
-    "You walk left... a shadow moves behind you. RUN!";
-}
-
-function right() {
-    document.getElementById("game").innerHTML =
-    "You open a door... IT SLAMS SHUT! A scream echoes!";
-}
-
-function stay() {
-    document.getElementById("game").innerHTML =
-    "You stay still... the breathing stops... YOU ARE NOT ALONE.";
-}
-</script>
-
+  <script>
+    function send(action) {
+      fetch("http://YOUR_PUBLIC_API/command", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-API-Key": "secret123"
+        },
+        body: JSON.stringify({ action: action })
+      })
+      .then(r => alert("Sent: " + action))
+      .catch(e => alert("Error"));
+    }
+  </script>
 </body>
 </html>
