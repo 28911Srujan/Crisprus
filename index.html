@@ -1,52 +1,47 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-  <meta charset="UTF-8">
-  <title>Minecraft Server Control</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: #121212;
-      color: white;
-      text-align: center;
-      padding-top: 80px;
+<style>
+    /* Styling to mimic GitHub's "New" or "Code" button */
+    .github-btn {
+        appearance: none;
+        background-color: #2ea44f;
+        border: 1px solid rgba(27, 31, 35, .15);
+        border-radius: 6px;
+        box-shadow: rgba(27, 31, 35, .1) 0 1px 0;
+        color: #ffffff;
+        cursor: pointer;
+        display: inline-block;
+        font-family: -apple-system, system-ui, "Segoe UI", Helvetica, Arial, sans-serif;
+        font-size: 14px;
+        font-weight: 600;
+        line-height: 20px;
+        padding: 6px 16px;
+        position: relative;
+        text-align: center;
+        text-decoration: none;
+        user-select: none;
+        vertical-align: middle;
+        white-space: nowrap;
     }
-    button {
-      font-size: 18px;
-      padding: 15px 30px;
-      margin: 10px;
-      border: none;
-      border-radius: 8px;
-      cursor: pointer;
+
+    .github-btn:hover {
+        background-color: #2c974b;
     }
-    .start { background: #2ecc71; }
-    .stop  { background: #e74c3c; }
-  </style>
+
+    .github-btn:active {
+        background-color: #298e46;
+        box-shadow: rgba(20, 70, 32, .2) 0 1px 0 inset;
+    }
+</style>
 </head>
 <body>
 
-  <h1>Minecraft Server Control</h1>
-
-  <button class="start" onclick="send('start')">Start Server</button>
-  <button class="stop" onclick="send('stop')">Stop Server</button>
-
-  <script>
-    function send(action) {
-      fetch("https://crisprus.run.place/command", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "X-API-Key": "secret123"
-        },
-        body: JSON.stringify({ action: action })
-      })
-      .then(r => {
-        if (!r.ok) throw new Error("Failed");
-        alert("Sent: " + action);
-      })
-      .catch(e => alert("Error sending command"));
-    }
-  </script>
+    <h2>GitHub Style Button</h2>
+    
+    <a href="https://github.com" class="github-btn">
+        Follow on GitHub
+    </a>
 
 </body>
 </html>
