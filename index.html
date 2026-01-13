@@ -1,85 +1,36 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Log Website</title>
+    <title>Controller - website.com</title>
     <style>
-        body {
-            font-family: sans-serif;
-            display: flex;
-            gap: 20px;
-            padding: 20px;
-        }
-
-        /* Styling the subdivisions */
-        .subdivision {
-            border: 2px solid #333;
-            padding: 20px;
-            border-radius: 8px;
-            min-height: 200px;
-            flex: 1;
-        }
-
-        .controls {
-            background-color: #f0f0f0;
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .display {
-            background-color: #fafafa;
-        }
-
-        button {
-            padding: 10px 20px;
-            font-size: 16px;
-            cursor: pointer;
-            width: 100px;
-        }
-
-        .log-entry {
-            font-family: monospace;
-            font-size: 1.2rem;
-            margin-bottom: 5px;
-            color: #222;
-        }
+        body { font-family: sans-serif; display: flex; flex-direction: column; align-items: center; padding-top: 50px; }
+        button { padding: 15px 30px; font-size: 18px; margin: 10px; cursor: pointer; border-radius: 8px; border: 1px solid #ccc; }
+        .start { background-color: #d4edda; }
+        .stop { background-color: #f8d7da; }
     </style>
 </head>
 <body>
-
-    <div class="subdivision controls">
-        <h3>Controls</h3>
-        <button onclick="updateLog('start')">Start</button>
-        <button onclick="updateLog('stop')">Stop</button>
-    </div>
-
-    <div class="subdivision display" id="output-box">
-        <h3>Activity Log</h3>
-        <div id="log-content"></div>
-    </div>
+    <h1>Control Panel</h1>
+    <button class="start" onclick="sendAction('start')">Start</button>
+    <button class="stop" onclick="sendAction('stop')">Stop</button>
 
     <script>
-        let counter = 1;
-
-        function updateLog(status) {
-            const logContainer = document.getElementById('log-content');
+        function sendAction(status) {
+            // 1. Get current list from storage or start empty
+            let logs = JSON.parse(localStorage.getItem('activityLogs')) || [];
             
-            // Create a new line for the log
-            const newEntry = document.createElement('div');
-            newEntry.className = 'log-entry';
-            newEntry.textContent = `[${counter} - ${status}]`;
-
-            // Add the new entry to the display subdivision
-            logContainer.appendChild(newEntry);
-
-            // Increment the counter for the next click
-            counter++;
+            // 2. Add new action
+            const entry = `[${logs.length + 1} - ${status}]`;
+            logs.push(entry);
+            
+            // 3. Save back to storage
+            localStorage.setItem('activityLogs', JSON.stringify(logs));
+            
+            // 4. Trigger a custom event so other tabs know to update
+            localStorage.setItem('lastUpdate', Date.now());
+            
+            alert('Action sent to /info!');
         }
     </script>
-
 </body>
 </html>
