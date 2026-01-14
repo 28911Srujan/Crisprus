@@ -3,32 +3,27 @@
 <head>
     <meta charset="UTF-8">
     <title>Signal Hub</title>
-    <style>
-        body { background: #000; color: #fff; font-family: 'JetBrains Mono', monospace; padding: 40px; }
-        .card { 
-            background: #111; border: 1px solid #222; padding: 20px; 
-            margin-bottom: 10px; border-radius: 10px; display: flex; justify-content: space-between;
-        }
-        .signal { font-weight: bold; text-transform: uppercase; }
-        .start { color: #2ecc71; }
-        .stop { color: #e74c3c; }
-    </style>
 </head>
 <body>
-    <h1 style="font-size: 1.2rem; opacity: 0.5;">LIVE SIGNAL STREAM</h1>
-    <div id="stream"></div>
+    <div id="raw-stream"></div>
+
     <script>
         function refresh() {
-            const container = document.getElementById('stream');
+            const container = document.getElementById('raw-stream');
             const data = JSON.parse(localStorage.getItem('mc_server_data')) || [];
-            container.innerHTML = data.map(s => `
-                <div class="card">
-                    <span>[${s.name}]</span>
-                    <span class="signal ${s.signal}">${s.signal}</span>
-                </div>
-            `).join('');
+            
+            // Generate clean paragraph lines for the server to scrape
+            let output = '';
+            data.forEach(s => {
+                output += `<p>[${s.name} - ${s.signal}]</p>`;
+            });
+            
+            container.innerHTML = output;
         }
+
+        // Check every 5 seconds as requested
         setInterval(refresh, 5000);
+        // Also update immediately if storage changes
         window.addEventListener('storage', refresh);
         refresh();
     </script>
