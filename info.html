@@ -2,49 +2,19 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Machine Readable Signals</title>
+    <title>Live Signals</title>
+    <meta http-equiv="refresh" content="5">
     <style>
-        /* Removing all default spacing so paragraphs are tight and easy to parse */
-        body { 
-            margin: 0; 
-            padding: 10px; 
-            font-family: monospace; 
-            background: #ffffff; 
-            color: #000000; 
-        }
-        p { 
-            margin: 0; 
-            padding: 0; 
-            line-height: 1.2; 
-        }
+        body { font-family: monospace; white-space: pre; padding: 20px; }
     </style>
 </head>
 <body>
-    <div id="output"></div>
-
-    <script>
-        function updateMachineData() {
-            const container = document.getElementById('output');
-            // Get the data shared by the controller
-            const servers = JSON.parse(localStorage.getItem('mc_server_data')) || [];
-            
-            let htmlContent = '';
-            
-            servers.forEach(server => {
-                htmlContent += `<p>[${server.name} - ${server.signal}]</p>`;
-            });
-
-            container.innerHTML = htmlContent;
-        }
-
-        // Auto-refresh every 5 seconds
-        setInterval(updateMachineData, 5000);
-        
-        // Instant update if the controller changes something
-        window.addEventListener('storage', updateMachineData);
-        
-        // Initial load
-        updateMachineData();
-    </script>
+<?php 
+    // This reads the text file and displays it as paragraphs
+    $lines = file('signals.txt');
+    foreach ($lines as $line) {
+        echo "<p>" . htmlspecialchars(trim($line)) . "</p>";
+    }
+?>
 </body>
 </html>
