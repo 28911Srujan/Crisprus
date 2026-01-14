@@ -1,44 +1,38 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <title>Server Info Data</title>
+    <meta charset="UTF-8">
+    <title>Server Data Stream</title>
     <style>
-        body { font-family: monospace; padding: 20px; background: white; color: black; }
-        p { margin: 0; padding: 2px 0; }
+        body { font-family: 'Courier New', Courier, monospace; line-height: 1.4; padding: 20px; }
+        p { margin: 0; color: #333; font-size: 1.1em; }
     </style>
 </head>
 <body>
-    <div id="raw-data"></div>
+    <div id="output"></div>
 
     <script>
-        function displayData() {
-            const container = document.getElementById('raw-data');
-            const data = JSON.parse(localStorage.getItem('mc_servers')) || {};
+        function refreshData() {
+            const output = document.getElementById('output');
+            const signals = JSON.parse(localStorage.getItem('mc_signals')) || {};
             
-            container.innerHTML = ''; // Clear
+            output.innerHTML = ''; // Clear display
             
-            // Loop through all 13 servers
             for (let i = 1; i <= 13; i++) {
-                const status = data[i] || 'stopped';
+                const signal = signals[i] || 'stop';
                 const p = document.createElement('p');
-                // Output format: [Server 1 - start]
-                // Note: using logic to match your requested format 
-                // "running" maps to "start", "stopped" maps to "stop" or "stopped"
-                let displayStatus = status;
-                if(status === "running") displayStatus = "start";
-                if(status === "stopped") displayStatus = "stop";
-
-                p.textContent = `[Server ${i} - ${displayStatus}]`;
-                container.appendChild(p);
+                // EXACT FORMAT: [Server 1 - start]
+                p.textContent = `[Server ${i} - ${signal}]`;
+                output.appendChild(p);
             }
         }
 
-        // Auto-refresh when storage changes
-        window.addEventListener('storage', displayData);
-        // Initial load
-        displayData();
-        // Constant polling every 1 sec to catch the Timer updates
-        setInterval(displayData, 1000);
+        // Check for updates instantly when storage changes
+        window.addEventListener('storage', refreshData);
+        // Fallback polling
+        setInterval(refreshData, 1000);
+        // Initial run
+        refreshData();
     </script>
 </body>
 </html>
