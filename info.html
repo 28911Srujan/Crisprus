@@ -2,37 +2,38 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Server Data Stream</title>
+    <title>Server Info Stream</title>
     <style>
-        body { font-family: 'Courier New', Courier, monospace; line-height: 1.4; padding: 20px; }
-        p { margin: 0; color: #333; font-size: 1.1em; }
+        body { font-family: 'Courier New', monospace; padding: 20px; line-height: 1.5; }
+        p { margin: 0; font-size: 1.2em; color: black; }
     </style>
 </head>
 <body>
-    <div id="output"></div>
+    <div id="data-container"></div>
 
     <script>
-        function refreshData() {
-            const output = document.getElementById('output');
+        function updateDisplay() {
+            const container = document.getElementById('data-container');
             const signals = JSON.parse(localStorage.getItem('mc_signals')) || {};
             
-            output.innerHTML = ''; // Clear display
-            
+            let html = '';
             for (let i = 1; i <= 13; i++) {
-                const signal = signals[i] || 'stop';
-                const p = document.createElement('p');
-                // EXACT FORMAT: [Server 1 - start]
-                p.textContent = `[Server ${i} - ${signal}]`;
-                output.appendChild(p);
+                const state = signals[i] || 'stop';
+                // Server readable format: [Server 1 - start]
+                html += `<p>[Server ${i} - ${state}]</p>`;
             }
+            container.innerHTML = html;
+            console.log("Data refreshed: " + new Date().toLocaleTimeString());
         }
 
-        // Check for updates instantly when storage changes
-        window.addEventListener('storage', refreshData);
-        // Fallback polling
-        setInterval(refreshData, 1000);
-        // Initial run
-        refreshData();
+        // 1. Update when the other tab sends a signal
+        window.addEventListener('storage', updateDisplay);
+
+        // 2. Auto update every 5 seconds (as requested)
+        setInterval(updateDisplay, 5000);
+
+        // Initial load
+        updateDisplay();
     </script>
 </body>
 </html>
