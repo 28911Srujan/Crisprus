@@ -2,38 +2,33 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Server Info Stream</title>
+    <title>Server Signal Stream</title>
     <style>
-        body { font-family: 'Courier New', monospace; padding: 20px; line-height: 1.5; }
-        p { margin: 0; font-size: 1.2em; color: black; }
+        body { font-family: 'Courier New', monospace; padding: 20px; line-height: 1.5; background: #fff; }
+        p { margin: 0; font-size: 1.2em; font-weight: bold; color: #000; }
     </style>
 </head>
 <body>
-    <div id="data-container"></div>
+    <div id="data-stream"></div>
 
     <script>
-        function updateDisplay() {
-            const container = document.getElementById('data-container');
-            const signals = JSON.parse(localStorage.getItem('mc_signals')) || {};
+        function refresh() {
+            const container = document.getElementById('data-stream');
+            const servers = JSON.parse(localStorage.getItem('mc_server_data')) || [];
             
-            let html = '';
-            for (let i = 1; i <= 13; i++) {
-                const state = signals[i] || 'stop';
-                // Server readable format: [Server 1 - start]
-                html += `<p>[Server ${i} - ${state}]</p>`;
-            }
-            container.innerHTML = html;
-            console.log("Data refreshed: " + new Date().toLocaleTimeString());
+            let output = '';
+            servers.forEach(s => {
+                // Format: [CustomName - start/stop]
+                output += `<p>[${s.name} - ${s.signal}]</p>`;
+            });
+            
+            container.innerHTML = output || '<p>No servers configured.</p>';
         }
 
-        // 1. Update when the other tab sends a signal
-        window.addEventListener('storage', updateDisplay);
-
-        // 2. Auto update every 5 seconds (as requested)
-        setInterval(updateDisplay, 5000);
-
-        // Initial load
-        updateDisplay();
+        // Auto-refresh triggers
+        window.addEventListener('storage', refresh);
+        setInterval(refresh, 5000); 
+        refresh();
     </script>
 </body>
 </html>
