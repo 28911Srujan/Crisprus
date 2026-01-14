@@ -2,30 +2,50 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Signal Hub</title>
+    <title>Machine Readable Signals</title>
+    <style>
+        /* Removing all default spacing so paragraphs are tight and easy to parse */
+        body { 
+            margin: 0; 
+            padding: 10px; 
+            font-family: monospace; 
+            background: #ffffff; 
+            color: #000000; 
+        }
+        p { 
+            margin: 0; 
+            padding: 0; 
+            line-height: 1.2; 
+        }
+    </style>
 </head>
 <body>
-    <div id="raw-stream"></div>
+    <div id="output"></div>
 
     <script>
-        function refresh() {
-            const container = document.getElementById('raw-stream');
-            const data = JSON.parse(localStorage.getItem('mc_server_data')) || [];
+        function updateMachineData() {
+            const container = document.getElementById('output');
+            // Get the data shared by the controller
+            const servers = JSON.parse(localStorage.getItem('mc_server_data')) || [];
             
-            // Generate clean paragraph lines for the server to scrape
-            let output = '';
-            data.forEach(s => {
-                output += `<p>[${s.name} - ${s.signal}]</p>`;
+            let htmlContent = '';
+            
+            servers.forEach(server => {
+                // This creates the exact line: [SMP - start]
+                htmlContent += `<p>[${server.name} - ${server.signal}]</p>`;
             });
-            
-            container.innerHTML = output;
+
+            container.innerHTML = htmlContent;
         }
 
-        // Check every 5 seconds as requested
-        setInterval(refresh, 5000);
-        // Also update immediately if storage changes
-        window.addEventListener('storage', refresh);
-        refresh();
+        // Auto-refresh every 5 seconds
+        setInterval(updateMachineData, 5000);
+        
+        // Instant update if the controller changes something
+        window.addEventListener('storage', updateMachineData);
+        
+        // Initial load
+        updateMachineData();
     </script>
 </body>
 </html>
