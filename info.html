@@ -2,30 +2,22 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Server Signal Stream</title>
+    <title>Server Stream</title>
     <style>
         body { font-family: 'Courier New', monospace; padding: 20px; line-height: 1.5; background: #fff; }
-        p { margin: 0; font-size: 1.2em; font-weight: bold; color: #000; }
+        p { margin: 0; font-size: 1.2em; font-weight: bold; color: #000; border-bottom: 1px solid #eee; }
     </style>
 </head>
 <body>
     <div id="data-stream"></div>
-
     <script>
         function refresh() {
             const container = document.getElementById('data-stream');
             const servers = JSON.parse(localStorage.getItem('mc_server_data')) || [];
-            
             let output = '';
-            servers.forEach(s => {
-                // Format: [CustomName - start/stop]
-                output += `<p>[${s.name} - ${s.signal}]</p>`;
-            });
-            
-            container.innerHTML = output || '<p>No servers configured.</p>';
+            servers.forEach(s => { output += `<p>[${s.name} - ${s.signal}]</p>`; });
+            container.innerHTML = output || '<p>No data.</p>';
         }
-
-        // Auto-refresh triggers
         window.addEventListener('storage', refresh);
         setInterval(refresh, 5000); 
         refresh();
