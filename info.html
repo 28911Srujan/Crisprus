@@ -1,39 +1,44 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <title>Info - website.com/info</title>
+    <title>Server Info Data</title>
     <style>
-        body { font-family: 'Courier New', monospace; padding: 20px; background-color: #222; color: #00ff00; }
-        .log-entry { margin-bottom: 8px; border-bottom: 1px solid #333; padding-bottom: 4px; }
-        h1 { color: white; font-family: sans-serif; }
+        body { font-family: monospace; padding: 20px; background: white; color: black; }
+        p { margin: 0; padding: 2px 0; }
     </style>
 </head>
 <body>
-    <h1>Activity Viewer (/info)</h1>
-    <div id="display"></div>
+    <div id="raw-data"></div>
 
     <script>
-        function renderLogs() {
-            const display = document.getElementById('display');
-            const logs = JSON.parse(localStorage.getItem('activityLogs')) || [];
+        function displayData() {
+            const container = document.getElementById('raw-data');
+            const data = JSON.parse(localStorage.getItem('mc_servers')) || {};
             
-            // Clear current view and rebuild it
-            display.innerHTML = '';
-            logs.forEach(log => {
-                const div = document.createElement('div');
-                div.className = 'log-entry';
-                div.textContent = log;
-                display.appendChild(div);
-            });
+            container.innerHTML = ''; // Clear
+            
+            // Loop through all 13 servers
+            for (let i = 1; i <= 13; i++) {
+                const status = data[i] || 'stopped';
+                const p = document.createElement('p');
+                // Output format: [Server 1 - start]
+                // Note: using logic to match your requested format 
+                // "running" maps to "start", "stopped" maps to "stop" or "stopped"
+                let displayStatus = status;
+                if(status === "running") displayStatus = "start";
+                if(status === "stopped") displayStatus = "stop";
+
+                p.textContent = `[Server ${i} - ${displayStatus}]`;
+                container.appendChild(p);
+            }
         }
 
-        // Listen for changes from the other page
-        window.addEventListener('storage', (event) => {
-            renderLogs();
-        });
-
+        // Auto-refresh when storage changes
+        window.addEventListener('storage', displayData);
         // Initial load
-        renderLogs();
+        displayData();
+        // Constant polling every 1 sec to catch the Timer updates
+        setInterval(displayData, 1000);
     </script>
 </body>
 </html>
