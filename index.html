@@ -4,34 +4,53 @@
     <meta charset="UTF-8">
     <title>MC Server Manager</title>
     <style>
-        :root { --mc-green: #3fb03f; --mc-red: #cc3333; --mc-grey: #555555; }
+        :root { 
+            --mc-green: #3fb03f; 
+            --mc-red: #cc3333; 
+            --mc-grey: #555555; 
+            --mc-bg: #222;
+        }
+        
         body {
             margin: 0; font-family: 'Segoe UI', sans-serif;
-            background: linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.7)), 
-                        url('https://www.minecraft.net/content/dam/games/minecraft/key-art/Games_Subnav_Minecraft-Wild-Update_600x338.jpg') center/cover no-repeat fixed;
+            /* High-quality Minecraft Background */
+            background: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), 
+                        url('https://wallpaperaccess.com/full/118406.jpg');
+            background-color: var(--mc-bg);
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            background-attachment: fixed;
             color: white; height: 100vh; display: flex; align-items: center; justify-content: center; overflow: hidden;
         }
         
-        /* Left Sidebar */
-        .menu-icon { position: fixed; top: 20px; left: 20px; font-size: 32px; cursor: pointer; z-index: 1000; background: rgba(0,0,0,0.6); padding: 5px 12px; border-radius: 5px; border: 1px solid #555; }
-        .sidebar { position: fixed; top: 0; left: -300px; width: 300px; height: 100%; background: #1a1a1a; transition: 0.3s; padding-top: 70px; z-index: 999; overflow-y: auto; border-right: 2px solid #333; }
+        /* Sidebar (Left) */
+        .menu-icon { position: fixed; top: 20px; left: 20px; font-size: 32px; cursor: pointer; z-index: 1000; background: rgba(0,0,0,0.8); padding: 5px 12px; border: 2px solid #555; border-radius: 4px; }
+        .sidebar { position: fixed; top: 0; left: -300px; width: 300px; height: 100%; background: #1a1a1a; transition: 0.3s; padding-top: 70px; z-index: 999; border-right: 3px solid #333; }
         .sidebar.active { left: 0; }
-        .sidebar-header { padding: 10px 20px; display: flex; justify-content: space-between; border-bottom: 1px solid #333; }
         
-        .server-item { display: flex; align-items: center; width: 90%; margin: 5px auto; }
-        .server-btn { flex-grow: 1; padding: 12px; background: #222; border: 1px solid #444; color: white; cursor: pointer; text-align: left; }
-        .del-btn { background: #600; color: white; border: none; padding: 12px; cursor: pointer; }
-        
-        .add-btn { width: 90%; margin: 20px 5%; padding: 10px; background: var(--mc-green); color: white; border: none; cursor: pointer; font-weight: bold; }
+        .server-btn { width: 90%; margin: 5px 5%; padding: 12px; background: #333; border: 1px solid #555; color: white; cursor: pointer; text-align: left; font-weight: bold; }
+        .server-btn:hover { border-color: var(--mc-green); }
 
         /* Main Panel */
-        .panel { background: rgba(0, 0, 0, 0.85); padding: 40px; border-radius: 10px; border: 4px solid #333; text-align: center; width: 400px; box-shadow: 0 0 20px rgba(0,0,0,0.5); }
-        .edit-name-input { background: #111; border: 1px solid #555; color: white; padding: 10px; font-size: 1.5rem; text-align: center; width: 80%; margin-bottom: 10px; }
-        .status-indicator { padding: 15px; margin: 20px 0; font-weight: bold; border-radius: 4px; text-transform: uppercase; font-family: monospace; border: 2px solid rgba(255,255,255,0.1); }
+        .panel { background: rgba(0, 0, 0, 0.85); padding: 40px; border: 4px solid #333; text-align: center; width: 380px; position: relative; }
+        .server-title { font-size: 2rem; margin-bottom: 20px; text-shadow: 2px 2px #000; }
+        
+        /* Settings Gear */
+        .settings-icon { position: absolute; top: 10px; right: 10px; cursor: pointer; font-size: 20px; opacity: 0.6; }
+        .settings-icon:hover { opacity: 1; }
+
+        /* Settings Area (Hidden by default) */
+        #settings-panel { display: none; margin-top: 20px; padding-top: 20px; border-top: 1px solid #444; }
+        .edit-input { background: #000; border: 1px solid var(--mc-green); color: white; padding: 8px; width: 80%; margin-bottom: 10px; }
+        .admin-btns { display: flex; gap: 5px; justify-content: center; }
+        .admin-btn { padding: 5px 10px; font-size: 12px; cursor: pointer; border: none; border-radius: 2px; }
+
+        .status-indicator { padding: 15px; margin: 20px 0; font-weight: bold; border-radius: 4px; text-transform: uppercase; border: 2px solid rgba(255,255,255,0.1); }
         .state-running { background: var(--mc-green); } .state-stopped { background: var(--mc-red); } .state-waiting { background: var(--mc-grey); }
         
-        .controls button { padding: 15px; font-size: 16px; margin: 10px; cursor: pointer; border: 2px solid #555; font-weight: bold; width: 110px; text-transform: uppercase; }
-        .btn-start { background: #3fb03f; color: white; } .btn-stop { background: #cc3333; color: white; }
+        .controls button { padding: 15px; font-size: 16px; margin: 10px; cursor: pointer; border: 2px solid #555; font-weight: bold; width: 110px; }
+        .btn-start { background: var(--mc-green); color: white; } .btn-stop { background: var(--mc-red); color: white; }
         button:disabled { opacity: 0.2; cursor: not-allowed; }
         #timer { font-family: monospace; color: #ffcc00; margin-top: 10px; font-size: 1.3em; }
     </style>
@@ -41,26 +60,55 @@
     <div class="menu-icon" onclick="document.getElementById('sidebar').classList.toggle('active')">☰</div>
     
     <div class="sidebar" id="sidebar">
-        <div class="sidebar-header"><span>Servers</span></div>
         <div id="server-list"></div>
-        <button class="add-btn" onclick="addServer()">+ Add New Server</button>
     </div>
 
     <div class="panel">
-        <input type="text" id="server-name-input" class="edit-name-input" onchange="renameServer(this.value)">
+        <div class="settings-icon" onclick="unlockSettings()">⚙️</div>
+        
+        <div class="server-title" id="display-name">Server 1</div>
         <div id="status-box" class="status-indicator">Stopped</div>
+        
         <div class="controls">
             <button id="start-btn" class="btn-start" onclick="triggerAction('start')">Start</button>
             <button id="stop-btn" class="btn-stop" onclick="triggerAction('stop')">Stop</button>
         </div>
         <div id="timer"></div>
+
+        <div id="settings-panel">
+            <input type="text" id="rename-input" class="edit-input" placeholder="New Name...">
+            <div class="admin-btns">
+                <button class="admin-btn" style="background:var(--mc-green); color:white" onclick="confirmRename()">Save Name</button>
+                <button class="admin-btn" style="background:#555; color:white" onclick="addServer()">Add New</button>
+                <button class="admin-btn" style="background:var(--mc-red); color:white" onclick="deleteServer()">Delete</button>
+            </div>
+            <p style="font-size:10px; color:#888; margin-top:10px;">Admin Mode Active</p>
+        </div>
     </div>
 
     <script>
         let currentIdx = 0;
+        let password = "1234"; // CHANGE YOUR PASSWORD HERE
+        let isUnlocked = false;
+
         let servers = JSON.parse(localStorage.getItem('mc_server_data')) || [
             { id: Date.now(), name: "Server 1", signal: "stop" }
         ];
+
+        function unlockSettings() {
+            if(isUnlocked) {
+                document.getElementById('settings-panel').style.display = 'none';
+                isUnlocked = false;
+                return;
+            }
+            let entry = prompt("Enter Admin Password:");
+            if(entry === password) {
+                document.getElementById('settings-panel').style.display = 'block';
+                isUnlocked = true;
+            } else {
+                alert("Wrong password!");
+            }
+        }
 
         function save() {
             localStorage.setItem('mc_server_data', JSON.stringify(servers));
@@ -68,42 +116,39 @@
             updateUI();
         }
 
+        function confirmRename() {
+            const newName = document.getElementById('rename-input').value;
+            if(newName) {
+                servers[currentIdx].name = newName;
+                document.getElementById('rename-input').value = "";
+                save();
+            }
+        }
+
         function addServer() {
             servers.push({ id: Date.now(), name: "New Server", signal: "stop" });
             save();
         }
 
-        function deleteServer(index, event) {
-            event.stopPropagation();
-            if(servers.length <= 1) return alert("Must have at least one server.");
-            servers.splice(index, 1);
-            if(currentIdx >= servers.length) currentIdx = 0;
-            save();
-        }
-
-        function renameServer(newName) {
-            servers[currentIdx].name = newName;
-            save();
+        function deleteServer() {
+            if(servers.length <= 1) return alert("Must keep at least one server.");
+            if(confirm("Delete this server?")) {
+                servers.splice(currentIdx, 1);
+                currentIdx = 0;
+                save();
+            }
         }
 
         function updateSidebar() {
             const list = document.getElementById('server-list');
             list.innerHTML = '';
             servers.forEach((s, i) => {
-                const div = document.createElement('div');
-                div.className = 'server-item';
-                div.innerHTML = `
-                    <button class="server-btn" onclick="selectServer(${i})">${s.name}</button>
-                    <button class="del-btn" onclick="deleteServer(${i}, event)">×</button>
-                `;
-                list.appendChild(div);
+                const btn = document.createElement('button');
+                btn.className = 'server-btn';
+                btn.innerText = s.name;
+                btn.onclick = () => { currentIdx = i; updateUI(); document.getElementById('sidebar').classList.remove('active'); };
+                list.appendChild(btn);
             });
-        }
-
-        function selectServer(i) {
-            currentIdx = i;
-            document.getElementById('sidebar').classList.remove('active');
-            updateUI();
         }
 
         function triggerAction(action) {
@@ -116,7 +161,7 @@
 
         function updateUI() {
             const server = servers[currentIdx];
-            document.getElementById('server-name-input').value = server.name;
+            document.getElementById('display-name').innerText = server.name;
             
             const box = document.getElementById('status-box');
             const timerDiv = document.getElementById('timer');
@@ -135,13 +180,11 @@
             } else {
                 timerDiv.innerText = "";
                 if (server.signal === "start") {
-                    box.innerText = "Running";
-                    box.className = "status-indicator state-running";
+                    box.innerText = "Running"; box.className = "status-indicator state-running";
                     document.getElementById('start-btn').disabled = true;
                     document.getElementById('stop-btn').disabled = false;
                 } else {
-                    box.innerText = "Stopped";
-                    box.className = "status-indicator state-stopped";
+                    box.innerText = "Stopped"; box.className = "status-indicator state-stopped";
                     document.getElementById('start-btn').disabled = false;
                     document.getElementById('stop-btn').disabled = true;
                 }
