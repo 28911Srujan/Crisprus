@@ -2,22 +2,24 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Minecraft Server Manager</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Minecraft Dashboard</title>
     <style>
         :root {
-            --bg-dark: #1a1a1a;
             --mc-green: #3fb03f;
             --mc-red: #cc3333;
             --mc-grey: #555555;
+            --overlay: rgba(0, 0, 0, 0.85);
         }
 
         body {
             margin: 0;
-            font-family: 'Segoe UI', sans-serif;
-            background: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(var(--overlay), var(--overlay)), 
                         url('https://wallpaperaccess.com/full/118406.jpg') center/cover no-repeat fixed;
             color: white;
             height: 100vh;
+            overflow: hidden;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -28,98 +30,104 @@
             position: fixed;
             top: 20px;
             right: 20px;
-            font-size: 30px;
+            font-size: 32px;
             cursor: pointer;
             z-index: 1000;
-            background: rgba(0,0,0,0.5);
-            padding: 10px;
+            background: rgba(0,0,0,0.6);
+            padding: 5px 12px;
             border-radius: 5px;
+            border: 1px solid #555;
         }
 
         .sidebar {
             position: fixed;
             top: 0;
-            right: -250px;
-            width: 250px;
+            right: -280px;
+            width: 280px;
             height: 100%;
-            background: rgba(0,0,0,0.9);
-            transition: 0.3s;
-            padding-top: 60px;
+            background: #111;
+            transition: 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            padding-top: 70px;
             z-index: 999;
             overflow-y: auto;
+            border-left: 2px solid #333;
         }
 
         .sidebar.active { right: 0; }
 
         .sidebar button {
             display: block;
-            width: 100%;
-            padding: 15px;
-            background: none;
-            border: none;
+            width: 90%;
+            margin: 5px auto;
+            padding: 12px;
+            background: #222;
+            border: 1px solid #444;
             color: white;
             text-align: left;
             cursor: pointer;
-            border-bottom: 1px solid #333;
+            border-radius: 4px;
         }
 
-        .sidebar button:hover { background: #444; }
+        .sidebar button:hover { background: #333; border-color: var(--mc-green); }
 
-        /* Main Panel */
+        /* Control Panel */
         .panel {
-            background: rgba(0,0,0,0.8);
-            padding: 40px;
-            border-radius: 15px;
-            border: 2px solid var(--mc-grey);
+            background: rgba(20, 20, 20, 0.9);
+            padding: 50px;
+            border-radius: 20px;
+            border: 1px solid #444;
             text-align: center;
-            width: 350px;
-            backdrop-filter: blur(5px);
+            width: 380px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
         }
 
         .status-indicator {
-            padding: 10px;
-            margin: 20px 0;
+            padding: 15px;
+            margin: 25px 0;
             font-weight: bold;
+            letter-spacing: 2px;
             text-transform: uppercase;
-            border-radius: 5px;
+            border-radius: 8px;
+            font-size: 1.2rem;
+            transition: 0.3s;
         }
 
-        .state-running { background: var(--mc-green); }
-        .state-stopped { background: var(--mc-red); }
+        .state-running { background: var(--mc-green); box-shadow: 0 0 15px var(--mc-green); }
+        .state-stopped { background: var(--mc-red); box-shadow: 0 0 15px var(--mc-red); }
         .state-waiting { background: var(--mc-grey); }
 
         .controls button {
-            padding: 15px 30px;
-            font-size: 18px;
+            padding: 15px 25px;
+            font-size: 16px;
             margin: 10px;
             cursor: pointer;
             border: none;
             border-radius: 5px;
             font-weight: bold;
+            width: 120px;
             transition: 0.2s;
         }
 
         .btn-start { background: var(--mc-green); color: white; }
         .btn-stop { background: var(--mc-red); color: white; }
-        .btn-start:disabled, .btn-stop:disabled { opacity: 0.3; cursor: not-allowed; }
+        .btn-start:disabled, .btn-stop:disabled { opacity: 0.2; cursor: not-allowed; }
 
-        #timer { font-size: 14px; margin-top: 10px; color: #aaa; }
+        #timer { font-family: monospace; color: #aaa; margin-top: 15px; height: 20px; }
     </style>
 </head>
 <body>
 
     <div class="menu-icon" onclick="toggleSidebar()">☰</div>
 
-    <div class="sidebar" id="sidebar">
-        </div>
+    <div class="sidebar" id="sidebar"></div>
 
     <div class="panel">
-        <h1 id="current-server-title">Server 1</h1>
+        <h1 id="server-title">Server 1</h1>
         <div id="status-box" class="status-indicator state-stopped">Stopped</div>
         
         <div class="controls">
-            <button id="start-btn" class="btn-start" onclick="handleAction('starting')">START</button>
-            <button id="stop-btn" class="btn-stop" onclick="handleAction('stopping')">STOP</button>
+            <button id="start-btn" class="btn-start" onclick="triggerAction('starting')">START</button>
+            <button id="stop-btn" class="btn-stop" onclick="triggerAction('stopping')">STOP</button>
         </div>
         <div id="timer"></div>
     </div>
@@ -127,96 +135,100 @@
     <script>
         let currentServer = 1;
         const totalServers = 13;
+        let activeInterval = null;
 
-        // Initialize Data
-        function initData() {
-            let data = JSON.parse(localStorage.getItem('mc_servers'));
-            if (!data) {
-                data = {};
-                for (let i = 1; i <= totalServers; i++) {
-                    data[i] = "stopped";
-                }
-                localStorage.setItem('mc_servers', JSON.stringify(data));
-            }
-            return data;
-        }
+        function toggleSidebar() { document.getElementById('sidebar').classList.toggle('active'); }
 
-        function toggleSidebar() {
-            document.getElementById('sidebar').classList.toggle('active');
-        }
-
-        function buildSidebar() {
+        function init() {
+            // Setup side buttons
             const side = document.getElementById('sidebar');
             for (let i = 1; i <= totalServers; i++) {
                 let btn = document.createElement('button');
-                btn.innerText = `Server ${i}`;
+                btn.innerText = `[#] Server ${i}`;
                 btn.onclick = () => { selectServer(i); toggleSidebar(); };
                 side.appendChild(btn);
             }
+
+            // Ensure Storage exists
+            if (!localStorage.getItem('mc_signals')) {
+                let signals = {};
+                for(let i=1; i<=13; i++) signals[i] = "stop";
+                localStorage.setItem('mc_signals', JSON.stringify(signals));
+            }
+            updateUI();
         }
 
         function selectServer(id) {
             currentServer = id;
-            document.getElementById('current-server-title').innerText = `Server ${id}`;
+            document.getElementById('server-title').innerText = `Server ${id}`;
             updateUI();
         }
 
+        function triggerAction(action) {
+            let signals = JSON.parse(localStorage.getItem('mc_signals'));
+            
+            if (action === 'starting') {
+                signals[currentServer] = "start"; // IMMEDIATE signal to /info
+                localStorage.setItem(`ui_mode_${currentServer}`, "waiting");
+                startCountdown(60);
+            } else {
+                signals[currentServer] = "stop"; // IMMEDIATE signal to /info
+                localStorage.setItem(`ui_mode_${currentServer}`, "stopped");
+            }
+            
+            localStorage.setItem('mc_signals', JSON.stringify(signals));
+            updateUI();
+        }
+
+        function startCountdown(seconds) {
+            if (activeInterval) clearInterval(activeInterval);
+            let left = seconds;
+            
+            activeInterval = setInterval(() => {
+                left--;
+                localStorage.setItem(`timer_${currentServer}`, left);
+                if (left <= 0) {
+                    clearInterval(activeInterval);
+                    localStorage.setItem(`ui_mode_${currentServer}`, "running");
+                }
+                updateUI();
+            }, 1000);
+        }
+
         function updateUI() {
-            const data = JSON.parse(localStorage.getItem('mc_servers'));
-            const status = data[currentServer];
+            const signals = JSON.parse(localStorage.getItem('mc_signals'));
+            const uiMode = localStorage.getItem(`ui_mode_${currentServer}`) || "stopped";
             const box = document.getElementById('status-box');
             const startBtn = document.getElementById('start-btn');
             const stopBtn = document.getElementById('stop-btn');
             const timerDiv = document.getElementById('timer');
 
-            box.innerText = status;
+            // Handle persistence of Timer display
             timerDiv.innerText = "";
-
-            if (status === "running") {
-                box.className = "status-indicator state-running";
-                startBtn.disabled = true;
-                stopBtn.disabled = false;
-            } else if (status === "stopped") {
-                box.className = "status-indicator state-stopped";
-                startBtn.disabled = false;
-                stopBtn.disabled = true;
-            } else {
+            
+            if (uiMode === "waiting") {
+                box.innerText = "Starting...";
                 box.className = "status-indicator state-waiting";
                 startBtn.disabled = true;
                 stopBtn.disabled = true;
-                if (status === "starting") startTimer(60, "running");
-                if (status === "stopping") startTimer(60, "stopped");
+                const savedTime = localStorage.getItem(`timer_${currentServer}`);
+                if (savedTime > 0) timerDiv.innerText = `LOADING: ${savedTime}s`;
+            } else if (uiMode === "running") {
+                box.innerText = "Running";
+                box.className = "status-indicator state-running";
+                startBtn.disabled = true;
+                stopBtn.disabled = false;
+            } else {
+                box.innerText = "Stopped";
+                box.className = "status-indicator state-stopped";
+                startBtn.disabled = false;
+                stopBtn.disabled = true;
             }
         }
 
-        function handleAction(newState) {
-            const data = JSON.parse(localStorage.getItem('mc_servers'));
-            data[currentServer] = newState;
-            localStorage.setItem('mc_servers', JSON.stringify(data));
-            localStorage.setItem('last_trigger', Date.now()); // Notify info page
-            updateUI();
-        }
-
-        function startTimer(seconds, finalState) {
-            let timeLeft = seconds;
-            const timerDiv = document.getElementById('timer');
-            const interval = setInterval(() => {
-                timerDiv.innerText = `ETA: ${timeLeft}s`;
-                timeLeft--;
-                if (timeLeft < 0) {
-                    clearInterval(interval);
-                    const data = JSON.parse(localStorage.getItem('mc_servers'));
-                    data[currentServer] = finalState;
-                    localStorage.setItem('mc_servers', JSON.stringify(data));
-                    localStorage.setItem('last_trigger', Date.now());
-                    updateUI();
-                }
-            }, 1000);
-        }
-
-        buildSidebar();
-        initData();
-        updateUI();
+        init();
+        // Sync across tabs
+        window.addEventListener('storage', updateUI);
     </script>
 </body>
 </html>
