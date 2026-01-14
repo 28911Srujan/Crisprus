@@ -1,12 +1,10 @@
 <?php
-// Receive the data from the controller
+// Receive raw text data from the Controller
 $data = file_get_contents('php://input');
 
-if ($data) {
-    // Write the data to signals.txt
+if ($data !== false) {
+    // Write the data into signals.txt
     file_put_contents('signals.txt', $data);
-    echo "Successfully saved to signals.txt";
-} else {
-    echo "No data received";
+    echo "Saved";
 }
 ?>
