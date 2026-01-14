@@ -149,9 +149,28 @@
             }
         }
 
+        // Replace your existing save() function with this:
         function save() {
+        // 1. Save to local memory (so the UI stays fast)
             localStorage.setItem('mc_server_data', JSON.stringify(servers));
-            updateSidebar(); updateUI();
+    
+       // 2. Format the data for the text file
+            let textOutput = "";
+            servers.forEach(s => {
+                textOutput += `[${s.name} - ${s.signal}]\n`;
+            });
+
+            // 3. Send the data to the server via the PHP bridge
+            fetch('save.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'text/plain' },
+                body: textOutput
+            })
+            .then(response => console.log("Server Updated"))
+            .catch(err => console.error("Upload failed:", err));
+        
+            updateSidebar();
+            updateUI();
         }
 
         function confirmRename() {
