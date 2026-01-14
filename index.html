@@ -11,24 +11,20 @@
             --accent: #f1c40f;
         }
 
-        /* Interactive Flashlight Background Logic */
         body {
             margin: 0; font-family: 'Inter', 'Segoe UI', sans-serif;
             background-color: #0a0a0a;
             height: 100vh; display: flex; align-items: center; justify-content: center;
-            overflow: hidden;
-            color: white;
-            cursor: default;
+            overflow: hidden; color: white;
         }
 
+        /* Flashlight Background Logic */
         #flashlight-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            /* The "Flashlight" effect - a radial gradient following the cursor */
             background: radial-gradient(circle at var(--x, 50%) var(--y, 50%), 
                         transparent 100px, 
                         rgba(0, 0, 0, 0.95) 250px);
             z-index: 1; pointer-events: none;
-            transition: background 0.1s ease;
         }
 
         #background-reveal {
@@ -41,14 +37,13 @@
         .menu-icon { 
             position: fixed; top: 25px; left: 25px; font-size: 28px; cursor: pointer; 
             z-index: 1000; background: rgba(255,255,255,0.1); padding: 10px; 
-            border-radius: 50%; backdrop-filter: blur(10px); transition: 0.3s;
+            border-radius: 50%; backdrop-filter: blur(10px);
         }
-        .menu-icon:hover { transform: scale(1.1); background: rgba(255,255,255,0.2); }
 
         .sidebar { 
             position: fixed; top: 0; left: -320px; width: 320px; height: 100%; 
-            background: rgba(15, 15, 15, 0.95); backdrop-filter: blur(20px);
-            transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
+            background: rgba(15, 15, 15, 0.98); backdrop-filter: blur(20px);
+            transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1); 
             padding-top: 80px; z-index: 999; border-right: 1px solid rgba(255,255,255,0.1);
         }
         .sidebar.active { left: 0; }
@@ -56,56 +51,45 @@
         .server-btn { 
             width: 85%; margin: 8px auto; display: block; padding: 15px; 
             background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); 
-            color: white; cursor: pointer; text-align: left; border-radius: 12px; transition: 0.2s;
+            color: white; cursor: pointer; text-align: left; border-radius: 12px;
         }
-        .server-btn:hover { background: var(--mc-green); border-color: white; transform: translateX(5px); }
 
-        /* Main Dashboard Panel */
+        /* Dashboard Panel */
         .panel { 
-            background: rgba(20, 20, 20, 0.8); backdrop-filter: blur(15px);
+            background: rgba(20, 20, 20, 0.85); backdrop-filter: blur(15px);
             padding: 50px; border-radius: 30px; border: 1px solid rgba(255,255,255,0.1);
             text-align: center; width: 400px; position: relative; z-index: 10;
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
-            animation: panelFade 0.8s ease-out;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5);
+            animation: panelFade 0.6s ease-out;
         }
 
-        @keyframes panelFade { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes panelFade { from { opacity: 0; transform: translateY(10px); } }
 
-        .server-title { font-size: 2.2rem; font-weight: 800; margin-bottom: 25px; letter-spacing: -1px; }
+        .server-title { font-size: 2.2rem; font-weight: 800; margin-bottom: 25px; }
 
-        /* Settings Gear with Spin Animation */
         .settings-icon { 
             position: absolute; top: 20px; right: 20px; cursor: pointer; font-size: 22px; 
-            opacity: 0.5; transition: 0.5s ease;
+            opacity: 0.5; transition: transform 0.5s ease;
         }
         .settings-icon:hover { opacity: 1; transform: rotate(90deg); }
 
-        /* Status & UI Components */
-        .status-indicator { 
-            padding: 15px; margin: 25px 0; font-weight: 700; border-radius: 15px; 
-            text-transform: uppercase; font-size: 0.9rem; letter-spacing: 1px;
-        }
+        .status-indicator { padding: 15px; margin: 25px 0; font-weight: 700; border-radius: 15px; text-transform: uppercase; }
         .state-running { background: rgba(46, 204, 113, 0.2); color: #2ecc71; border: 1px solid #2ecc71; } 
         .state-stopped { background: rgba(231, 76, 60, 0.2); color: #e74c3c; border: 1px solid #e74c3c; } 
         .state-waiting { background: rgba(149, 165, 166, 0.2); color: #95a5a6; border: 1px solid #95a5a6; }
 
         .controls button { 
-            padding: 16px 25px; font-size: 14px; margin: 10px; cursor: pointer; 
+            padding: 16px; font-size: 14px; margin: 10px; cursor: pointer; 
             border: none; border-radius: 12px; font-weight: 800; width: 130px; 
-            transition: 0.3s; text-transform: uppercase;
         }
-        .btn-start { background: #2ecc71; color: white; box-shadow: 0 4px 15px rgba(46, 204, 113, 0.3); }
-        .btn-stop { background: #e74c3c; color: white; box-shadow: 0 4px 15px rgba(231, 76, 60, 0.3); }
-        .btn-start:hover:not(:disabled) { transform: translateY(-3px); box-shadow: 0 8px 25px rgba(46, 204, 113, 0.4); }
+        .btn-start { background: #2ecc71; color: white; }
+        .btn-stop { background: #e74c3c; color: white; }
         button:disabled { opacity: 0.1; filter: grayscale(1); cursor: not-allowed; }
 
-        #timer { font-family: 'JetBrains Mono', monospace; color: var(--accent); margin-top: 15px; font-weight: bold; }
+        #timer { font-family: monospace; color: var(--accent); margin-top: 15px; font-weight: bold; font-size: 1.2rem; }
 
-        /* Admin Panel Styling */
-        #settings-panel { display: none; margin-top: 30px; padding: 20px; background: rgba(0,0,0,0.3); border-radius: 20px; animation: slideUp 0.3s ease; }
-        @keyframes slideUp { from { opacity: 0; transform: translateY(10px); } }
+        #settings-panel { display: none; margin-top: 30px; padding: 20px; background: rgba(0,0,0,0.3); border-radius: 20px; }
         .edit-input { background: #000; border: 1px solid #333; color: white; padding: 12px; border-radius: 8px; width: 100%; box-sizing: border-box; margin-bottom: 15px; }
-        .admin-btn { border: none; padding: 10px 15px; border-radius: 8px; cursor: pointer; font-size: 11px; font-weight: bold; margin: 0 2px; }
     </style>
 </head>
 <body>
@@ -132,17 +116,16 @@
         <div id="timer"></div>
 
         <div id="settings-panel">
-            <input type="text" id="rename-input" class="edit-input" placeholder="Update Server Name">
-            <div style="display: flex; justify-content: space-between;">
-                <button class="admin-btn" style="background:#2ecc71; color:white; flex: 2;" onclick="confirmRename()">Save</button>
-                <button class="admin-btn" style="background:#3498db; color:white; flex: 1;" onclick="addServer()">+</button>
-                <button class="admin-btn" style="background:#e74c3c; color:white; flex: 1;" onclick="deleteServer()">×</button>
+            <input type="text" id="rename-input" class="edit-input" placeholder="Server Name">
+            <div style="display: flex; gap: 5px;">
+                <button onclick="confirmRename()" style="flex:2; background:#2ecc71; border:none; color:white; border-radius:8px; cursor:pointer;">Save</button>
+                <button onclick="addServer()" style="flex:1; background:#3498db; border:none; color:white; border-radius:8px; cursor:pointer;">+</button>
+                <button onclick="deleteServer()" style="flex:1; background:#e74c3c; border:none; color:white; border-radius:8px; cursor:pointer;">×</button>
             </div>
         </div>
     </div>
 
     <script>
-        // Track mouse for flashlight effect
         document.addEventListener('mousemove', e => {
             const x = (e.clientX / window.innerWidth) * 100;
             const y = (e.clientY / window.innerHeight) * 100;
@@ -153,14 +136,14 @@
         let currentIdx = 0;
         let password = "1234"; 
         let isUnlocked = false;
-        let servers = JSON.parse(localStorage.getItem('mc_server_data')) || [{ id: Date.now(), name: "Main Hub", signal: "stop" }];
+        let servers = JSON.parse(localStorage.getItem('mc_server_data')) || [{ id: Date.now(), name: "Lobby", signal: "stop" }];
 
         function unlockSettings() {
             if(isUnlocked) {
                 document.getElementById('settings-panel').style.display = 'none';
                 isUnlocked = false; return;
             }
-            if(prompt("Enter Admin PIN:") === password) {
+            if(prompt("PIN:") === password) {
                 document.getElementById('settings-panel').style.display = 'block';
                 isUnlocked = true;
             }
@@ -216,7 +199,7 @@
             if (remaining > 0 && (actionType === 'starting' || actionType === 'stopping')) {
                 box.innerText = actionType === 'starting' ? "Initialising..." : "Shutting Down...";
                 box.className = "status-indicator state-waiting";
-                timerDiv.innerText = `[ ETA: ${remaining}s ]`;
+                timerDiv.innerText = `ETA: ${remaining}s`;
                 document.getElementById('start-btn').disabled = true;
                 document.getElementById('stop-btn').disabled = true;
             } else {
