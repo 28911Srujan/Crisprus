@@ -1,36 +1,222 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <title>Controller - website.com</title>
+    <meta charset="UTF-8">
+    <title>Minecraft Server Manager</title>
     <style>
-        body { font-family: sans-serif; display: flex; flex-direction: column; align-items: center; padding-top: 50px; }
-        button { padding: 15px 30px; font-size: 18px; margin: 10px; cursor: pointer; border-radius: 8px; border: 1px solid #ccc; }
-        .start { background-color: #d4edda; }
-        .stop { background-color: #f8d7da; }
+        :root {
+            --bg-dark: #1a1a1a;
+            --mc-green: #3fb03f;
+            --mc-red: #cc3333;
+            --mc-grey: #555555;
+        }
+
+        body {
+            margin: 0;
+            font-family: 'Segoe UI', sans-serif;
+            background: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), 
+                        url('https://wallpaperaccess.com/full/118406.jpg') center/cover no-repeat fixed;
+            color: white;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Hamburger Menu */
+        .menu-icon {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            font-size: 30px;
+            cursor: pointer;
+            z-index: 1000;
+            background: rgba(0,0,0,0.5);
+            padding: 10px;
+            border-radius: 5px;
+        }
+
+        .sidebar {
+            position: fixed;
+            top: 0;
+            right: -250px;
+            width: 250px;
+            height: 100%;
+            background: rgba(0,0,0,0.9);
+            transition: 0.3s;
+            padding-top: 60px;
+            z-index: 999;
+            overflow-y: auto;
+        }
+
+        .sidebar.active { right: 0; }
+
+        .sidebar button {
+            display: block;
+            width: 100%;
+            padding: 15px;
+            background: none;
+            border: none;
+            color: white;
+            text-align: left;
+            cursor: pointer;
+            border-bottom: 1px solid #333;
+        }
+
+        .sidebar button:hover { background: #444; }
+
+        /* Main Panel */
+        .panel {
+            background: rgba(0,0,0,0.8);
+            padding: 40px;
+            border-radius: 15px;
+            border: 2px solid var(--mc-grey);
+            text-align: center;
+            width: 350px;
+            backdrop-filter: blur(5px);
+        }
+
+        .status-indicator {
+            padding: 10px;
+            margin: 20px 0;
+            font-weight: bold;
+            text-transform: uppercase;
+            border-radius: 5px;
+        }
+
+        .state-running { background: var(--mc-green); }
+        .state-stopped { background: var(--mc-red); }
+        .state-waiting { background: var(--mc-grey); }
+
+        .controls button {
+            padding: 15px 30px;
+            font-size: 18px;
+            margin: 10px;
+            cursor: pointer;
+            border: none;
+            border-radius: 5px;
+            font-weight: bold;
+            transition: 0.2s;
+        }
+
+        .btn-start { background: var(--mc-green); color: white; }
+        .btn-stop { background: var(--mc-red); color: white; }
+        .btn-start:disabled, .btn-stop:disabled { opacity: 0.3; cursor: not-allowed; }
+
+        #timer { font-size: 14px; margin-top: 10px; color: #aaa; }
     </style>
 </head>
 <body>
-    <h1>Control Panel</h1>
-    <button class="start" onclick="sendAction('start')">Start</button>
-    <button class="stop" onclick="sendAction('stop')">Stop</button>
+
+    <div class="menu-icon" onclick="toggleSidebar()">☰</div>
+
+    <div class="sidebar" id="sidebar">
+        </div>
+
+    <div class="panel">
+        <h1 id="current-server-title">Server 1</h1>
+        <div id="status-box" class="status-indicator state-stopped">Stopped</div>
+        
+        <div class="controls">
+            <button id="start-btn" class="btn-start" onclick="handleAction('starting')">START</button>
+            <button id="stop-btn" class="btn-stop" onclick="handleAction('stopping')">STOP</button>
+        </div>
+        <div id="timer"></div>
+    </div>
 
     <script>
-        function sendAction(status) {
-            // 1. Get current list from storage or start empty
-            let logs = JSON.parse(localStorage.getItem('activityLogs')) || [];
-            
-            // 2. Add new action
-            const entry = `[${logs.length + 1} - ${status}]`;
-            logs.push(entry);
-            
-            // 3. Save back to storage
-            localStorage.setItem('activityLogs', JSON.stringify(logs));
-            
-            // 4. Trigger a custom event so other tabs know to update
-            localStorage.setItem('lastUpdate', Date.now());
-            
-            alert('Action sent to /info!');
+        let currentServer = 1;
+        const totalServers = 13;
+
+        // Initialize Data
+        function initData() {
+            let data = JSON.parse(localStorage.getItem('mc_servers'));
+            if (!data) {
+                data = {};
+                for (let i = 1; i <= totalServers; i++) {
+                    data[i] = "stopped";
+                }
+                localStorage.setItem('mc_servers', JSON.stringify(data));
+            }
+            return data;
         }
+
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('active');
+        }
+
+        function buildSidebar() {
+            const side = document.getElementById('sidebar');
+            for (let i = 1; i <= totalServers; i++) {
+                let btn = document.createElement('button');
+                btn.innerText = `Server ${i}`;
+                btn.onclick = () => { selectServer(i); toggleSidebar(); };
+                side.appendChild(btn);
+            }
+        }
+
+        function selectServer(id) {
+            currentServer = id;
+            document.getElementById('current-server-title').innerText = `Server ${id}`;
+            updateUI();
+        }
+
+        function updateUI() {
+            const data = JSON.parse(localStorage.getItem('mc_servers'));
+            const status = data[currentServer];
+            const box = document.getElementById('status-box');
+            const startBtn = document.getElementById('start-btn');
+            const stopBtn = document.getElementById('stop-btn');
+            const timerDiv = document.getElementById('timer');
+
+            box.innerText = status;
+            timerDiv.innerText = "";
+
+            if (status === "running") {
+                box.className = "status-indicator state-running";
+                startBtn.disabled = true;
+                stopBtn.disabled = false;
+            } else if (status === "stopped") {
+                box.className = "status-indicator state-stopped";
+                startBtn.disabled = false;
+                stopBtn.disabled = true;
+            } else {
+                box.className = "status-indicator state-waiting";
+                startBtn.disabled = true;
+                stopBtn.disabled = true;
+                if (status === "starting") startTimer(60, "running");
+                if (status === "stopping") startTimer(60, "stopped");
+            }
+        }
+
+        function handleAction(newState) {
+            const data = JSON.parse(localStorage.getItem('mc_servers'));
+            data[currentServer] = newState;
+            localStorage.setItem('mc_servers', JSON.stringify(data));
+            localStorage.setItem('last_trigger', Date.now()); // Notify info page
+            updateUI();
+        }
+
+        function startTimer(seconds, finalState) {
+            let timeLeft = seconds;
+            const timerDiv = document.getElementById('timer');
+            const interval = setInterval(() => {
+                timerDiv.innerText = `ETA: ${timeLeft}s`;
+                timeLeft--;
+                if (timeLeft < 0) {
+                    clearInterval(interval);
+                    const data = JSON.parse(localStorage.getItem('mc_servers'));
+                    data[currentServer] = finalState;
+                    localStorage.setItem('mc_servers', JSON.stringify(data));
+                    localStorage.setItem('last_trigger', Date.now());
+                    updateUI();
+                }
+            }, 1000);
+        }
+
+        buildSidebar();
+        initData();
+        updateUI();
     </script>
 </body>
 </html>
