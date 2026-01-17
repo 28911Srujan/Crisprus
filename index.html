@@ -1,270 +1,38 @@
 <!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Server Control Center</title>
-    <style>
-        :root { 
-            --mc-green: #2ecc71; 
-            --mc-red: #e74c3c; 
-            --mc-grey: #95a5a6; 
-            --accent: #f1c40f;
-        }
-
-        body {
-            margin: 0; font-family: 'Inter', 'Segoe UI', sans-serif;
-            background-color: #0a0a0a;
-            height: 100vh; display: flex; align-items: center; justify-content: center;
-            overflow: hidden; color: white;
-        }
-
-        /* Interactive Flashlight Effect */
-        #flashlight-overlay {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: radial-gradient(circle at var(--x, 50%) var(--y, 50%), 
-                        transparent 120px, 
-                        rgba(0, 0, 0, 0.94) 280px);
-            z-index: 1; pointer-events: none;
-        }
-
-        #background-reveal {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: url('https://images.unsplash.com/photo-1614850523459-c2f4c699c52e?auto=format&fit=crop&q=80&w=2070') center/cover;
-            z-index: 0;
-        }
-
-        /* Sidebar (Left side) */
-        .menu-icon { 
-            position: fixed; top: 25px; left: 25px; font-size: 28px; cursor: pointer; 
-            z-index: 1000; background: rgba(255,255,255,0.1); padding: 10px; 
-            border-radius: 50%; backdrop-filter: blur(10px); transition: 0.3s;
-        }
-        .menu-icon:hover { background: rgba(255,255,255,0.2); transform: scale(1.1); }
-
-        .sidebar { 
-            position: fixed; top: 0; left: -320px; width: 320px; height: 100%; 
-            background: rgba(10, 10, 10, 0.98); backdrop-filter: blur(25px);
-            transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1); 
-            padding-top: 80px; z-index: 999; border-right: 1px solid rgba(255,255,255,0.1);
-        }
-        .sidebar.active { left: 0; }
-
-        .server-btn { 
-            width: 85%; margin: 10px auto; display: block; padding: 15px; 
-            background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); 
-            color: white; cursor: pointer; text-align: left; border-radius: 12px; transition: 0.2s;
-        }
-        .server-btn:hover { background: rgba(255,255,255,0.15); border-color: var(--mc-green); }
-
-        /* Dashboard Panel */
-        .panel { 
-            background: rgba(20, 20, 20, 0.8); backdrop-filter: blur(20px);
-            padding: 50px; border-radius: 35px; border: 1px solid rgba(255,255,255,0.1);
-            text-align: center; width: 400px; position: relative; z-index: 10;
-            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.6);
-        }
-
-        .server-title { font-size: 2.3rem; font-weight: 800; margin-bottom: 10px; letter-spacing: -1px; }
-
-        /* Settings Gear */
-        .settings-icon { 
-            position: absolute; top: 25px; right: 25px; cursor: pointer; font-size: 22px; 
-            opacity: 0.4; transition: transform 0.6s ease;
-        }
-        .settings-icon:hover { opacity: 1; transform: rotate(180deg); }
-
-        /* Status UI */
-        .status-indicator { padding: 15px; margin: 25px 0; font-weight: 700; border-radius: 18px; text-transform: uppercase; font-size: 0.9rem; }
-        .state-running { background: rgba(46, 204, 113, 0.15); color: #2ecc71; border: 1px solid #2ecc71; } 
-        .state-stopped { background: rgba(231, 76, 60, 0.15); color: #e74c3c; border: 1px solid #e74c3c; } 
-        .state-waiting { background: rgba(149, 165, 166, 0.15); color: #95a5a6; border: 1px solid #95a5a6; }
-
-        .controls button { 
-            padding: 16px; font-size: 14px; margin: 10px; cursor: pointer; 
-            border: none; border-radius: 14px; font-weight: 800; width: 130px; transition: 0.3s;
-        }
-        .btn-start { background: #2ecc71; color: white; }
-        .btn-stop { background: #e74c3c; color: white; }
-        .btn-start:hover:not(:disabled) { box-shadow: 0 0 20px rgba(46, 204, 113, 0.4); transform: translateY(-2px); }
-        .btn-stop:hover:not(:disabled) { box-shadow: 0 0 20px rgba(231, 76, 60, 0.4); transform: translateY(-2px); }
-        button:disabled { opacity: 0.1; filter: grayscale(1); cursor: not-allowed; }
-
-        #timer { font-family: 'JetBrains Mono', monospace; color: var(--accent); margin-top: 15px; font-weight: bold; font-size: 1.2rem; }
-
-        /* Admin Settings Panel */
-        #settings-panel { display: none; margin-top: 30px; padding: 20px; background: rgba(0,0,0,0.4); border-radius: 20px; border: 1px solid rgba(255,255,255,0.05); }
-        .edit-input { background: #000; border: 1px solid #333; color: white; padding: 12px; border-radius: 10px; width: 100%; box-sizing: border-box; margin-bottom: 15px; }
-        .admin-btn-row { display: flex; gap: 8px; }
-        .admin-btn-row button { border: none; padding: 10px; border-radius: 8px; cursor: pointer; font-weight: bold; color: white; }
-    </style>
-</head>
+<html>
 <body>
-
-    <div id="background-reveal"></div>
-    <div id="flashlight-overlay"></div>
-
-    <div class="menu-icon" onclick="document.getElementById('sidebar').classList.toggle('active')">☰</div>
-    
-    <div class="sidebar" id="sidebar">
-        <div id="server-list"></div>
-    </div>
-
-    <div class="panel">
-        <div class="settings-icon" onclick="unlockSettings()">⚙️</div>
-        
-        <div class="server-title" id="display-name">Server 1</div>
-        <div id="status-box" class="status-indicator">Offline</div>
-        
-        <div class="controls">
-            <button id="start-btn" class="btn-start" onclick="triggerAction('start')">Start</button>
-            <button id="stop-btn" class="btn-stop" onclick="triggerAction('stop')">Stop</button>
-        </div>
-        <div id="timer"></div>
-
-        <div id="settings-panel">
-            <input type="text" id="rename-input" class="edit-input" placeholder="Server Name">
-            <div class="admin-btn-row">
-                <button onclick="confirmRename()" style="flex:2; background:#2ecc71;">Save</button>
-                <button onclick="addServer()" style="flex:1; background:#3498db;">+</button>
-                <button onclick="deleteServer()" style="flex:1; background:#e74c3c;">×</button>
-            </div>
-        </div>
-    </div>
+    <h1>Live Editor</h1>
+    <textarea id="myText" rows="5" cols="30">Loading content...</textarea><br>
+    <button onclick="saveToGitHub()">Update text.txt</button>
 
     <script>
-        // Track mouse movement for the Reveal effect
-        document.addEventListener('mousemove', e => {
-            const x = (e.clientX / window.innerWidth) * 100;
-            const y = (e.clientY / window.innerHeight) * 100;
-            document.getElementById('flashlight-overlay').style.setProperty('--x', `${x}%`);
-            document.getElementById('flashlight-overlay').style.setProperty('--y', `${y}%`);
-        });
+        const TOKEN = 'YOUR_TOKEN_HERE'; 
+        const REPO = 'username/repo-name';
+        const FILE_PATH = 'text.txt';
 
-        let currentIdx = 0;
-        let password = "1234"; // ADMIN PASSWORD
-        let isUnlocked = false;
-
-        // Load servers from memory or default
-        let servers = JSON.parse(localStorage.getItem('mc_server_data')) || [
-            { id: Date.now(), name: "Lobby", signal: "stop" }
-        ];
-
-        function unlockSettings() {
-            if(isUnlocked) {
-                document.getElementById('settings-panel').style.display = 'none';
-                isUnlocked = false; return;
-            }
-            if(prompt("Enter Admin PIN:") === password) {
-                document.getElementById('settings-panel').style.display = 'block';
-                isUnlocked = true;
-            }
+        // 1. Fetch current content when page opens
+        async function loadFile() {
+            const res = await fetch(`https://api.github.com/repos/${REPO}/contents/${FILE_PATH}`);
+            const data = await res.json();
+            document.getElementById('myText').value = atob(data.content);
+            window.fileSha = data.sha; // Save this ID to update later
         }
 
-        function save() {
-            // 1. Store in Browser for UI
-            localStorage.setItem('mc_server_data', JSON.stringify(servers));
-            
-            // 2. Format for server.txt
-            let textOutput = "";
-            servers.forEach(s => { 
-                textOutput += `[${s.name} - ${s.signal}]\n`; 
+        // 2. Save new content
+        async function saveToGitHub() {
+            const newContent = document.getElementById('myText').value;
+            const res = await fetch(`https://api.github.com/repos/${REPO}/contents/${FILE_PATH}`, {
+                method: 'PUT',
+                headers: { 'Authorization': `token ${TOKEN}`, 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    message: "Web update",
+                    content: btoa(newContent), // Convert to Base64
+                    sha: window.fileSha
+                })
             });
-
-            // 3. Send to server via PHP bridge
-            fetch('save.php', { 
-                method: 'POST', 
-                headers: { 'Content-Type': 'text/plain' },
-                body: textOutput 
-            })
-            .then(res => res.text())
-            .then(data => console.log("File Update:", data))
-            .catch(err => console.error("Network Error:", err));
-
-            updateSidebar(); 
-            updateUI();
+            if(res.ok) alert("Updated successfully!");
         }
-
-        function confirmRename() {
-            const val = document.getElementById('rename-input').value;
-            if(val) { 
-                servers[currentIdx].name = val; 
-                document.getElementById('rename-input').value = ""; 
-                save(); 
-            }
-        }
-
-        function addServer() {
-            servers.push({ id: Date.now(), name: "New Server", signal: "stop" });
-            save();
-        }
-
-        function deleteServer() {
-            if(servers.length > 1 && confirm("Delete this server?")) {
-                servers.splice(currentIdx, 1);
-                currentIdx = 0;
-                save();
-            }
-        }
-
-        function updateSidebar() {
-            const list = document.getElementById('server-list');
-            list.innerHTML = '';
-            servers.forEach((s, i) => {
-                const btn = document.createElement('button');
-                btn.className = 'server-btn';
-                btn.innerText = s.name;
-                btn.onclick = () => { 
-                    currentIdx = i; 
-                    updateUI(); 
-                    document.getElementById('sidebar').classList.remove('active'); 
-                };
-                list.appendChild(btn);
-            });
-        }
-
-        function triggerAction(action) {
-            const s = servers[currentIdx];
-            s.signal = action;
-            localStorage.setItem(`time_${s.id}`, Date.now());
-            localStorage.setItem(`action_${s.id}`, action === 'start' ? 'starting' : 'stopping');
-            save();
-        }
-
-        function updateUI() {
-            const s = servers[currentIdx];
-            document.getElementById('display-name').innerText = s.name;
-            const box = document.getElementById('status-box');
-            const timerDiv = document.getElementById('timer');
-            const startTime = localStorage.getItem(`time_${s.id}`);
-            const actionType = localStorage.getItem(`action_${s.id}`);
-
-            let elapsed = startTime ? Math.floor((Date.now() - startTime) / 1000) : 999;
-            let remaining = 60 - elapsed;
-
-            if (remaining > 0 && (actionType === 'starting' || actionType === 'stopping')) {
-                box.innerText = actionType === 'starting' ? "Initialising..." : "Shutting Down...";
-                box.className = "status-indicator state-waiting";
-                timerDiv.innerText = `ETA: ${remaining}s`;
-                document.getElementById('start-btn').disabled = true;
-                document.getElementById('stop-btn').disabled = true;
-            } else {
-                timerDiv.innerText = "";
-                if (s.signal === "start") {
-                    box.innerText = "Active"; box.className = "status-indicator state-running";
-                    document.getElementById('start-btn').disabled = true;
-                    document.getElementById('stop-btn').disabled = false;
-                } else {
-                    box.innerText = "Offline"; box.className = "status-indicator state-stopped";
-                    document.getElementById('start-btn').disabled = false;
-                    document.getElementById('stop-btn').disabled = true;
-                }
-            }
-        }
-
-        setInterval(updateUI, 1000);
-        updateSidebar(); 
-        updateUI();
+        loadFile();
     </script>
 </body>
 </html>
