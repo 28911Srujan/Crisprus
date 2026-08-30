@@ -3,37 +3,73 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Download Page</title>
+    <title>Download Presentation</title>
     <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
         body {
-            font-family: Arial, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: #0d1117;
+            color: #c9d1d9;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            height: 100vh;
-            margin: 0;
-            background-color: #f4f4f9;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .card {
+            background-color: #161b22;
+            border: 1px solid #30363d;
+            border-radius: 12px;
+            padding: 40px;
+            text-align: center;
+            max-width: 450px;
+            width: 100%;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+        }
+        h1 {
+            font-size: 1.5rem;
+            color: #f0f6fc;
+            margin-bottom: 12px;
+        }
+        p {
+            font-size: 0.95rem;
+            color: #8b949e;
+            margin-bottom: 28px;
+            word-break: break-word;
         }
         .download-btn {
-            padding: 12px 24px;
-            font-size: 18px;
-            color: white;
-            background-color: #2ea44f;
-            border: none;
+            display: inline-block;
+            width: 100%;
+            padding: 12px 20px;
+            font-size: 1rem;
+            font-weight: 600;
+            color: #ffffff;
+            background-color: #238636;
+            border: 1px solid rgba(240, 246, 252, 0.1);
             border-radius: 6px;
             text-decoration: none;
-            cursor: pointer;
+            transition: background-color 0.2s ease, transform 0.1s ease;
         }
         .download-btn:hover {
-            background-color: #2c974b;
+            background-color: #2ea44f;
+        }
+        .download-btn:active {
+            transform: scale(0.98);
         }
     </style>
 </head>
 <body>
 
-    <h1>Click below to download your file</h1>
-    <a href="X A - 9 - Green Skill.pptx" download class="download-btn">Download File</a>
+    <div class="card">
+        <h1>Green Skill Presentation</h1>
+        <p>X A - 9 - Green Skill.pptx</p>
+        <a href="X A - 9 - Green Skill.pptx" download class="download-btn">Download PowerPoint</a>
+    </div>
 
 </body>
 </html>
