@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Download Presentation</title>
-    <!-- Include Three.js for 3D Earth rendering -->
+    <title>Green Skill Presentation</title>
+    <!-- Three.js for 3D rendering -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <style>
         * {
@@ -15,8 +15,8 @@
 
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            background-color: #030712;
-            color: #c9d1d9;
+            background-color: #030208;
+            color: #ffffff;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -26,8 +26,8 @@
             position: relative;
         }
 
-        /* 3D Canvas Background */
-        #webgl-bg {
+        /* 3D WebGL Canvas Background */
+        #globe-canvas {
             position: fixed;
             top: 0;
             left: 0;
@@ -40,31 +40,34 @@
         .card {
             position: relative;
             z-index: 2;
-            background: rgba(13, 17, 23, 0.75);
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
-            border: 1px solid rgba(255, 255, 255, 0.12);
-            border-radius: 16px;
+            background: rgba(15, 12, 29, 0.65);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(168, 85, 247, 0.25);
+            border-radius: 20px;
             padding: 40px;
             text-align: center;
-            max-width: 440px;
+            max-width: 460px;
             width: 100%;
-            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8), 0 0 30px rgba(46, 164, 79, 0.15);
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8), 0 0 40px rgba(168, 85, 247, 0.2);
         }
 
         h1 {
-            font-size: 1.6rem;
-            color: #f0f6fc;
+            font-size: 1.8rem;
+            color: #ffffff;
             margin-bottom: 10px;
+            font-weight: 700;
+            letter-spacing: -0.5px;
         }
 
         p {
             font-size: 0.95rem;
-            color: #8b949e;
+            color: #a1a1aa;
             margin-bottom: 30px;
             word-break: break-word;
         }
 
+        /* Purple Neon Download Button */
         .download-btn {
             display: inline-block;
             width: 100%;
@@ -72,17 +75,17 @@
             font-size: 1rem;
             font-weight: 600;
             color: #ffffff;
-            background: linear-gradient(135deg, #238636, #2ea44f);
+            background: linear-gradient(135deg, #8b5cf6, #6366f1);
             border: none;
-            border-radius: 8px;
+            border-radius: 10px;
             text-decoration: none;
-            box-shadow: 0 4px 15px rgba(46, 164, 79, 0.4);
+            box-shadow: 0 4px 20px rgba(139, 92, 246, 0.4);
             transition: all 0.3s ease;
         }
 
         .download-btn:hover {
-            background: linear-gradient(135deg, #2ea44f, #3fb950);
-            box-shadow: 0 6px 25px rgba(46, 164, 79, 0.6);
+            background: linear-gradient(135deg, #a855f7, #7c3aed);
+            box-shadow: 0 6px 30px rgba(168, 85, 247, 0.7);
             transform: translateY(-2px);
         }
 
@@ -93,8 +96,7 @@
 </head>
 <body>
 
-    <!-- Canvas for 3D Earth -->
-    <canvas id="webgl-bg"></canvas>
+    <canvas id="globe-canvas"></canvas>
 
     <div class="card">
         <h1>Green Skill Presentation</h1>
@@ -105,66 +107,88 @@
     <script>
         // Setup Three.js Scene
         const scene = new THREE.Scene();
-        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-        const renderer = new THREE.WebGLRenderer({ canvas: document.getElementById('webgl-bg'), antialias: true });
+        const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer({ canvas: document.getElementById('globe-canvas'), antialias: true, alpha: true });
 
         renderer.setSize(window.innerWidth, window.innerHeight);
         renderer.setPixelRatio(window.devicePixelRatio);
 
-        // Create 3D Globe with Texture Map
-        const geometry = new THREE.SphereGeometry(2.2, 64, 64);
-        const textureLoader = new THREE.TextureLoader();
-        const earthTexture = textureLoader.load('https://raw.githubusercontent.com/mrdoob/three.js/master/examples/textures/land_ocean_ice_cloud_2048.jpg');
-        
-        const material = new THREE.MeshPhongMaterial({
-            map: earthTexture,
-            shininess: 15
+        // Group to hold globe objects
+        const globeGroup = new THREE.Group();
+        scene.add(globeGroup);
+
+        // Position & tilt earth like reference image
+        globeGroup.position.set(0, -1.8, 0); 
+        globeGroup.rotation.x = 0.3;
+
+        // 1. Dotted Globe Particles
+        const radius = 4.2;
+        const dotsCount = 12000;
+        const dotPositions = new Float32Array(dotsCount * 3);
+
+        // Distribute points evenly over a sphere surface (Fibonacci Sphere Algorithm)
+        const phi = Math.PI * (3 - Math.sqrt(5));
+        for (let i = 0; i < dotsCount; i++) {
+            const y = 1 - (i / (dotsCount - 1)) * 2;
+            const r = Math.sqrt(1 - y * y);
+            const theta = phi * i;
+
+            dotPositions[i * 3] = Math.cos(theta) * r * radius;
+            dotPositions[i * 3 + 1] = y * radius;
+            dotPositions[i * 3 + 2] = Math.sin(theta) * r * radius;
+        }
+
+        const dotsGeometry = new THREE.BufferGeometry();
+        dotsGeometry.setAttribute('position', new THREE.BufferAttribute(dotPositions, 3));
+
+        const dotsMaterial = new THREE.PointsMaterial({
+            color: 0xe9d5ff,
+            size: 0.035,
+            transparent: true,
+            opacity: 0.85
         });
 
-        const earth = new THREE.Mesh(geometry, material);
-        scene.add(earth);
+        const dottedGlobe = new THREE.Points(dotsGeometry, dotsMaterial);
+        globeGroup.add(dottedGlobe);
 
-        // Add Outer Atmosphere Glow
-        const atmosGeometry = new THREE.SphereGeometry(2.28, 64, 64);
-        const atmosMaterial = new THREE.MeshBasicMaterial({
-            color: 0x1f6feb,
+        // 2. Purple Atmosphere Glow Ring
+        const atmosphereGeo = new THREE.SphereGeometry(radius * 1.03, 64, 64);
+        const atmosphereMat = new THREE.MeshBasicMaterial({
+            color: 0x9333ea,
             transparent: true,
-            opacity: 0.15,
+            opacity: 0.18,
             side: THREE.BackSide
         });
-        const atmosphere = new THREE.Mesh(atmosGeometry, atmosMaterial);
-        scene.add(atmosphere);
+        const atmosphere = new THREE.Mesh(atmosphereGeo, atmosphereMat);
+        globeGroup.add(atmosphere);
 
-        // Add Starfield Background Particles
-        const starsGeometry = new THREE.BufferGeometry();
-        const starsCount = 1200;
+        // 3. Ambient Background Floating Purple Particles
+        const starsGeo = new THREE.BufferGeometry();
+        const starsCount = 600;
         const starPositions = new Float32Array(starsCount * 3);
 
         for (let i = 0; i < starsCount * 3; i++) {
-            starPositions[i] = (Math.random() - 0.5) * 100;
+            starPositions[i] = (Math.random() - 0.5) * 30;
         }
 
-        starsGeometry.setAttribute('position', new THREE.BufferAttribute(starPositions, 3));
-        const starsMaterial = new THREE.PointsMaterial({ color: 0xffffff, size: 0.1, transparent: true, opacity: 0.8 });
-        const starField = new THREE.Points(starsGeometry, starsMaterial);
+        starsGeo.setAttribute('position', new THREE.BufferAttribute(starPositions, 3));
+        const starsMat = new THREE.PointsMaterial({
+            color: 0xc084fc,
+            size: 0.04,
+            transparent: true,
+            opacity: 0.5
+        });
+        const starField = new THREE.Points(starsGeo, starsMat);
         scene.add(starField);
 
-        // Lighting
-        const ambientLight = new THREE.AmbientLight(0x333333, 1.2);
-        scene.add(ambientLight);
+        camera.position.z = 6.5;
 
-        const sunLight = new THREE.DirectionalLight(0xffffff, 1.5);
-        sunLight.position.set(5, 3, 5);
-        scene.add(sunLight);
-
-        camera.position.z = 5;
-
-        // Continuous Rotation Animation Loop
+        // Animation Loop
         function animate() {
             requestAnimationFrame(animate);
 
-            earth.rotation.y += 0.002;
-            atmosphere.rotation.y += 0.002;
+            // Rotate Dotted Globe smoothly
+            dottedGlobe.rotation.y += 0.0015;
             starField.rotation.y -= 0.0003;
 
             renderer.render(scene, camera);
@@ -172,7 +196,7 @@
 
         animate();
 
-        // Responsive Resizing
+        // Responsive Resize Handler
         window.addEventListener('resize', () => {
             camera.aspect = window.innerWidth / window.innerHeight;
             camera.updateProjectionMatrix();
