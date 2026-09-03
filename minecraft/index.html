@@ -127,50 +127,45 @@
         </div>
     </div>
 
-    <!-- Firebase Integration Script -->
-    <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-    import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+    <!-- Firebase Compatibility Scripts -->
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
 
+<script>
     const firebaseConfig = {
-  apiKey: "AIzaSyAVJAuVwWbLlTbeRsa8bxnuTd0ajQMD4u4",
-  authDomain: "aio-webcontrol.firebaseapp.com",
-  databaseURL: "https://aio-webcontrol-default-rtdb.asia-southeast1.firebasedatabase.app",
-  projectId: "aio-webcontrol",
-  storageBucket: "aio-webcontrol.firebasestorage.app",
-  messagingSenderId: "588457288600",
-  appId: "1:588457288600:web:70458e157ee40f1dbfc1ed",
-  measurementId: "G-LL3F636K9Z"
-};
+        apiKey: "AIzaSyAVJAuVwWbLlTbeRsa8bxnuTd0ajQMD4u4",
+        authDomain: "aio-webcontrol.firebaseapp.com",
+        databaseURL: "https://aio-webcontrol-default-rtdb.asia-southeast1.firebasedatabase.app",
+        projectId: "aio-webcontrol",
+        storageBucket: "aio-webcontrol.firebasestorage.app",
+        messagingSenderId: "588457288600",
+        appId: "1:588457288600:web:70458e157ee40f1dbfc1ed",
+        measurementId: "G-LL3F636K9Z"
+    };
 
-    try {
-        const app = initializeApp(firebaseConfig);
-        const db = getDatabase(app);
+    // Initialize Firebase
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
 
-        // Listen for live status changes
-        onValue(ref(db, 'server_status'), (snapshot) => {
-            const status = snapshot.val();
-            if (status !== null) {
-                document.getElementById('status').innerText = status;
-            } else {
-                document.getElementById('status').innerText = "OFFLINE";
-            }
-        }, (error) => {
-            console.error("Firebase read error:", error);
-            document.getElementById('status').innerText = "CONNECTION ERROR";
-        });
+    // Listen for live status changes
+    db.ref('server_status').on('value', (snapshot) => {
+        const status = snapshot.val();
+        if (status !== null) {
+            document.getElementById('status').innerText = status;
+        } else {
+            document.getElementById('status').innerText = "OFFLINE";
+        }
+    }, (error) => {
+        console.error("Firebase read error:", error);
+        document.getElementById('status').innerText = "CONNECTION ERROR";
+    });
 
-        // Send power command
-        window.sendCommand = (cmd) => {
-            set(ref(db, 'power_command'), cmd)
-                .then(() => console.log("Command sent:", cmd))
-                .catch((error) => console.error("Firebase write error:", error));
-        };
-
-    } catch (e) {
-        console.error("Firebase init error:", e);
-        document.getElementById('status').innerText = "INIT ERROR";
-    }
+    // Send power command
+    window.sendCommand = (cmd) => {
+        db.ref('power_command').set(cmd)
+            .then(() => console.log("Command sent:", cmd))
+            .catch((error) => console.error("Firebase write error:", error));
+    };
 </script>
 
     <script>
