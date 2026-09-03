@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Minecraft Server Control</title>
+    <!-- Three.js for 3D rendering -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: #030208;
+            color: #ffffff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 20px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* 3D WebGL Canvas Background */
+        #globe-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: 1;
+        }
+
+        /* Glassmorphism Control Card */
+        .card {
+            position: relative;
+            z-index: 2;
+            background: rgba(15, 12, 29, 0.65);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(168, 85, 247, 0.25);
+            border-radius: 20px;
+            padding: 40px;
+            text-align: center;
+            max-width: 460px;
+            width: 100%;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8), 0 0 40px rgba(168, 85, 247, 0.2);
+        }
+
+        h1 {
+            font-size: 1.8rem;
+            color: #ffffff;
+            margin-bottom: 10px;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+        }
+
+        p {
+            font-size: 0.95rem;
+            color: #a1a1aa;
+            margin-bottom: 30px;
+            word-break: break-word;
+        }
+
+        /* Control Buttons Style */
+        .btn-group {
+            display: flex;
+            gap: 15px;
+        }
+
+        .control-btn {
+            flex: 1;
+            padding: 14px 20px;
+            font-size: 1rem;
+            font-weight: 600;
+            color: #ffffff;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+        }
+
+        .btn-on {
+            background: linear-gradient(135deg, #10b981, #059669);
+            box-shadow: 0 4px 20px rgba(16, 185, 129, 0.4);
+        }
+
+        .btn-on:hover {
+            background: linear-gradient(135deg, #34d399, #10b981);
+            box-shadow: 0 6px 30px rgba(16, 185, 129, 0.7);
+            transform: translateY(-2px);
+        }
+
+        .btn-off {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+            box-shadow: 0 4px 20px rgba(239, 68, 68, 0.4);
+        }
+
+        .btn-off:hover {
+            background: linear-gradient(135deg, #f87171, #ef4444);
+            box-shadow: 0 6px 30px rgba(239, 68, 68, 0.7);
+            transform: translateY(-2px);
+        }
+
+        .control-btn:active {
+            transform: translateY(0);
+        }
+    </style>
+</head>
+<body>
+
+    <canvas id="globe-canvas"></canvas>
+
+    <div class="card">
+        <h1>Minecraft Server Control</h1>
+        <p>Server Status: <strong id="status" style="color: #d8b4fe;">Loading...</strong></p>
+        
+        <div class="btn-group">
+            <button class="control-btn btn-on" onclick="sendCommand('START')">TURN ON</button>
+            <button class="control-btn btn-off" onclick="sendCommand('STOP')">TURN OFF</button>
+        </div>
+    </div>
+
+    <!-- Firebase Integration Script -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+        import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+
+        // TODO: Replace with your actual Firebase project keys
+        const firebaseConfig = {
+            apiKey: "PASTE_API_KEY_HERE",
+            authDomain: "PASTE_AUTH_DOMAIN_HERE",
+            databaseURL: "PASTE_DATABASE_URL_HERE",
+            projectId: "PASTE_PROJECT_ID_HERE",
+            storageBucket: "PASTE_STORAGE_BUCKET_HERE",
+            messagingSenderId: "PASTE_MESSAGING_SENDER_ID_HERE",
+            appId: "PASTE_APP_ID_HERE"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+
+        // Listen for live status changes from Firebase
+        onValue(ref(db, 'server_status'), (snapshot) => {
+            const status = snapshot.val() || "OFFLINE";
+            document.getElementById('status').innerText = status;
+        });
+
+        // Send power command to Firebase when buttons are clicked
+        window.sendCommand = (cmd) => {
+            set(ref(db, 'power_command'), cmd);
+        };
+    </script>
+
+    <script>
+        // 1. Setup Three.js Scene
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer({ canvas: document.getElementById('globe-canvas'), antialias: true, alpha: true });
+
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setPixelRatio(window.devicePixelRatio);
+
+        // Group to hold globe objects so they can be rotated together
+        const globeGroup = new THREE.Group();
+        scene.add(globeGroup);
+
+        // Position & tilt earth like the reference design
+        globeGroup.position.set(0, -1.8, 0); 
+        globeGroup.rotation.x = 0.3;
+        globeGroup.rotation.y = -1.5;
+
+        const radius = 4.2;
+
+        // 2. Load Earth Map and Create Dotted Continents
+        const img = new Image();
+        img.crossOrigin = 'Anonymous';
+        img.src = 'https://raw.githubusercontent.com/mrdoob/three.js/master/examples/textures/planets/earth_specular_2048.jpg';
+
+        img.onload = function() {
+            const canvas = document.createElement('canvas');
+            canvas.width = img.width;
+            canvas.height = img.height;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(img, 0, 0, img.width, img.height);
+            const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+            const data = imgData.data;
+
+            const dotPositions = [];
+            const rows = 150;
+
+            for (let lat = -90; lat <= 90; lat += 180 / rows) {
+                const r = Math.cos((lat * Math.PI) / 180);
+                const cols = Math.floor(300 * r);
+
+                for (let lon = -180; lon < 180; lon += 360 / Math.max(1, cols)) {
+                    const u = (lon + 180) / 360;
+                    const v = (lat + 90) / 180;
+
+                    const x = Math.floor(u * canvas.width);
+                    const y = Math.floor((1 - v) * canvas.height);
+                    const index = (y * canvas.width + x) * 4;
+
+                    if (data[index] < 20) {
+                        const phi = (90 - lat) * (Math.PI / 180);
+                        const theta = (lon + 180) * (Math.PI / 180);
+
+                        const px = -(radius * Math.sin(phi) * Math.cos(theta));
+                        const pz = (radius * Math.sin(phi) * Math.sin(theta));
+                        const py = (radius * Math.cos(phi));
+
+                        dotPositions.push(px, py, pz);
+                    }
+                }
+            }
+
+            const dotsGeometry = new THREE.BufferGeometry();
+            dotsGeometry.setAttribute('position', new THREE.Float32BufferAttribute(dotPositions, 3));
+
+            const dotsMaterial = new THREE.PointsMaterial({
+                color: 0xd8b4fe,
+                size: 0.035,
+                transparent: true,
+                opacity: 0.9
+            });
+
+            const dottedGlobe = new THREE.Points(dotsGeometry, dotsMaterial);
+            globeGroup.add(dottedGlobe);
+        };
+
+        // 3. Purple Atmosphere Glow Ring
+        const atmosphereGeo = new THREE.SphereGeometry(radius * 1.02, 64, 64);
+        const atmosphereMat = new THREE.MeshBasicMaterial({
+            color: 0x7e22ce,
+            transparent: true,
+            opacity: 0.25,
+            side: THREE.BackSide,
+            blending: THREE.AdditiveBlending
+        });
+        const atmosphere = new THREE.Mesh(atmosphereGeo, atmosphereMat);
+        globeGroup.add(atmosphere);
+
+        // 4. Ambient Background Floating Purple Particles
+        const starsGeo = new THREE.BufferGeometry();
+        const starsCount = 400;
+        const starPositions = new Float32Array(starsCount * 3);
+
+        for (let i = 0; i < starsCount * 3; i++) {
+            starPositions[i] = (Math.random() - 0.5) * 30;
+        }
+
+        starsGeo.setAttribute('position', new THREE.BufferAttribute(starPositions, 3));
+        const starsMat = new THREE.PointsMaterial({
+            color: 0xa855f7,
+            size: 0.04,
+            transparent: true,
+            opacity: 0.4
+        });
+        const starField = new THREE.Points(starsGeo, starsMat);
+        scene.add(starField);
+
+        camera.position.z = 6.5;
+
+        // 5. Animation Loop
+        function animate() {
+            requestAnimationFrame(animate);
+            globeGroup.rotation.y += 0.001;
+            starField.rotation.y -= 0.0003;
+            renderer.render(scene, camera);
+        }
+
+        animate();
+
+        // Responsive Resize Handler
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+    </script>
+</body>
+</html>
