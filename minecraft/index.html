@@ -129,34 +129,49 @@
 
     <!-- Firebase Integration Script -->
     <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-        import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+    import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 
-        // TODO: Replace with your actual Firebase project keys
-        const firebaseConfig = {
-            apiKey: "PASTE_API_KEY_HERE",
-            authDomain: "PASTE_AUTH_DOMAIN_HERE",
-            databaseURL: "PASTE_DATABASE_URL_HERE",
-            projectId: "PASTE_PROJECT_ID_HERE",
-            storageBucket: "PASTE_STORAGE_BUCKET_HERE",
-            messagingSenderId: "PASTE_MESSAGING_SENDER_ID_HERE",
-            appId: "PASTE_APP_ID_HERE"
-        };
+    const firebaseConfig = {
+  apiKey: "AIzaSyAVJAuVwWbLlTbeRsa8bxnuTd0ajQMD4u4",
+  authDomain: "aio-webcontrol.firebaseapp.com",
+  databaseURL: "https://aio-webcontrol-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "aio-webcontrol",
+  storageBucket: "aio-webcontrol.firebasestorage.app",
+  messagingSenderId: "588457288600",
+  appId: "1:588457288600:web:70458e157ee40f1dbfc1ed",
+  measurementId: "G-LL3F636K9Z"
+};
 
+    try {
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
 
-        // Listen for live status changes from Firebase
+        // Listen for live status changes
         onValue(ref(db, 'server_status'), (snapshot) => {
-            const status = snapshot.val() || "OFFLINE";
-            document.getElementById('status').innerText = status;
+            const status = snapshot.val();
+            if (status !== null) {
+                document.getElementById('status').innerText = status;
+            } else {
+                document.getElementById('status').innerText = "OFFLINE";
+            }
+        }, (error) => {
+            console.error("Firebase read error:", error);
+            document.getElementById('status').innerText = "CONNECTION ERROR";
         });
 
-        // Send power command to Firebase when buttons are clicked
+        // Send power command
         window.sendCommand = (cmd) => {
-            set(ref(db, 'power_command'), cmd);
+            set(ref(db, 'power_command'), cmd)
+                .then(() => console.log("Command sent:", cmd))
+                .catch((error) => console.error("Firebase write error:", error));
         };
-    </script>
+
+    } catch (e) {
+        console.error("Firebase init error:", e);
+        document.getElementById('status').innerText = "INIT ERROR";
+    }
+</script>
 
     <script>
         // 1. Setup Three.js Scene
