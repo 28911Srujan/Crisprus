@@ -6,32 +6,45 @@
     <title>Minecraft Server Dashboard</title>
     <style>
         body { font-family: Arial, sans-serif; text-align: center; background: #1e1e1e; color: white; margin-top: 50px; }
-        .card { background: #2d2d2d; padding: 20px; border-radius: 8px; display: inline-block; box-shadow: 0 4px 8px rgba(0,0,0,0.3); }
+        .card { background: #2d2d2d; padding: 20px; border-radius: 8px; display: inline-block; box-shadow: 0 4px 8px rgba(0,0,0,0.3); width: 350px; }
         .status { font-weight: bold; padding: 5px 10px; border-radius: 4px; display: inline-block; margin-bottom: 15px; }
         .offline { background: #d9534f; }
         .online { background: #5cb85c; }
-        button { background: #0275d8; color: white; border: none; padding: 10px 20px; font-size: 16px; border-radius: 4px; cursor: pointer; }
+        button { background: #0275d8; color: white; border: none; padding: 10px 20px; font-size: 16px; border-radius: 4px; cursor: pointer; margin-top: 10px; }
         button:hover { background: #025aa5; }
+        select { padding: 8px; font-size: 14px; border-radius: 4px; margin-bottom: 10px; width: 80%; }
     </style>
 </head>
 <body>
 
     <div class="card">
         <h2>Minecraft Server Status</h2>
-        <div id="status-badge" class="status offline">Loading Status...</div>
-        <p>Current Host: <span id="active-host">None</span></p>
+        <div id="status-badge" class="status offline">Loading...</div>
+        <p>Connector Status: <span id="connector-status">Unknown</span></p>
+        
+        <label for="server-select">Choose Server:</label><br>
+        <select id="server-select">
+            <option value="SMP">SMP</option>
+            <option value="SKYWARS">SKYWARS</option>
+            <option value="PVP">PVP</option>
+            <option value="MINIGAME">MINIGAME</option>
+            <option value="PILLARS_OF_FORTUNE">PILLARS OF FORTUNE</option>
+            <option value="ETC">ETC</option>
+        </select>
         <br>
-        <button onclick="requestLaunch()">Notify App to Launch</button>
+        <button onclick="sendStartCommand()">Request Start (RUN)</button>
     </div>
 
+    <!-- Firebase Realtime Database SDK Scripts -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getFirestore, doc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getDatabase, ref, onValue, update } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
-        // Your web app's Firebase configuration
+        // Your Firebase configuration (Grab from your Firebase Project Settings)
         const firebaseConfig = {
             apiKey: "YOUR_API_KEY",
             authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
+            databaseURL: "https://aio-webcontrol-default-rtdb.asia-southeast1.firebasedatabase.app",
             projectId: "YOUR_PROJECT_ID",
             storageBucket: "YOUR_PROJECT_ID.appspot.com",
             messagingSenderId: "SENDER_ID",
@@ -39,34 +52,42 @@
         };
 
         const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
+        const db = getDatabase(app);
 
-        async function fetchServerStatus() {
-            const docRef = doc(db, "server", "status");
-            const docSnap = await getDoc(docRef);
-            
-            if (docSnap.exists()) {
-                const data = docSnap.data();
+        // Listen for real-time updates to connector_status and connector_command
+        const statusRef = ref(db, '/');
+        onValue(statusRef, (snapshot) => {
+            const data = snapshot.val();
+            if (data) {
                 const badge = document.getElementById("status-badge");
-                const hostSpan = document.getElementById("active-host");
+                const statusSpan = document.getElementById("connector-status");
+                
+                const currentStatus = data.connector_status || "OFFLINE";
+                statusSpan.innerText = currentStatus;
 
-                hostSpan.innerText = data.activeHost || "None";
-                if (data.isOnline) {
+                if (currentStatus === "ONLINE") {
                     badge.className = "status online";
-                    badge.innerText = "ONLINE";
+                    badge.innerText = "ONLINE / READY";
                 } else {
                     badge.className = "status offline";
-                    badge.innerText = "OFFLINE";
+                    badge.innerText = "STOPPED / OFFLINE";
                 }
             }
-        }
+        });
 
-        window.requestLaunch = async function() {
-            alert("Open your local companion app on your target PC to pull files and start the server!");
+        // Function triggered when you click the button to start a server
+        window.sendStartCommand = function() {
+            const selectedServer = document.getElementById("server-select").value;
+            
+            // Update the database command to RUN for the selected server/connector
+            update(ref(db), {
+                connector_command: "RUN",
+                // You can also log which specific sub-server is targeted if your app needs it
+                target_server: selectedServer 
+            }).then(() => {
+                alert("Command sent! Your local app should catch the 'RUN' signal and boot up.");
+            });
         }
-
-        fetchServerStatus();
-        setInterval(fetchServerStatus, 5000); // Poll status every 5 seconds
     </script>
 </body>
 </html>
