@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Minecraft Server Dashboard</title>
+    <style>
+        body { font-family: Arial, sans-serif; text-align: center; background: #1e1e1e; color: white; margin-top: 50px; }
+        .card { background: #2d2d2d; padding: 20px; border-radius: 8px; display: inline-block; box-shadow: 0 4px 8px rgba(0,0,0,0.3); }
+        .status { font-weight: bold; padding: 5px 10px; border-radius: 4px; display: inline-block; margin-bottom: 15px; }
+        .offline { background: #d9534f; }
+        .online { background: #5cb85c; }
+        button { background: #0275d8; color: white; border: none; padding: 10px 20px; font-size: 16px; border-radius: 4px; cursor: pointer; }
+        button:hover { background: #025aa5; }
+    </style>
+</head>
+<body>
+
+    <div class="card">
+        <h2>Minecraft Server Status</h2>
+        <div id="status-badge" class="status offline">Loading Status...</div>
+        <p>Current Host: <span id="active-host">None</span></p>
+        <br>
+        <button onclick="requestLaunch()">Notify App to Launch</button>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getFirestore, doc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+        // Your web app's Firebase configuration
+        const firebaseConfig = {
+            apiKey: "YOUR_API_KEY",
+            authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
+            projectId: "YOUR_PROJECT_ID",
+            storageBucket: "YOUR_PROJECT_ID.appspot.com",
+            messagingSenderId: "SENDER_ID",
+            appId: "APP_ID"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        async function fetchServerStatus() {
+            const docRef = doc(db, "server", "status");
+            const docSnap = await getDoc(docRef);
+            
+            if (docSnap.exists()) {
+                const data = docSnap.data();
+                const badge = document.getElementById("status-badge");
+                const hostSpan = document.getElementById("active-host");
+
+                hostSpan.innerText = data.activeHost || "None";
+                if (data.isOnline) {
+                    badge.className = "status online";
+                    badge.innerText = "ONLINE";
+                } else {
+                    badge.className = "status offline";
+                    badge.innerText = "OFFLINE";
+                }
+            }
+        }
+
+        window.requestLaunch = async function() {
+            alert("Open your local companion app on your target PC to pull files and start the server!");
+        }
+
+        fetchServerStatus();
+        setInterval(fetchServerStatus, 5000); // Poll status every 5 seconds
+    </script>
+</body>
+</html>
