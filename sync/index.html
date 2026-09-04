@@ -6,24 +6,25 @@
     <title>Minecraft Server Dashboard</title>
     <style>
         body { font-family: Arial, sans-serif; text-align: center; background: #1e1e1e; color: white; margin-top: 50px; }
-        .card { background: #2d2d2d; padding: 20px; border-radius: 8px; display: inline-block; box-shadow: 0 4px 8px rgba(0,0,0,0.3); width: 350px; }
+        .card { background: #2d2d2d; padding: 20px; border-radius: 8px; display: inline-block; box-shadow: 0 4px 8px rgba(0,0,0,0.3); width: 380px; }
         .status { font-weight: bold; padding: 5px 10px; border-radius: 4px; display: inline-block; margin-bottom: 15px; }
         .offline { background: #d9534f; }
         .online { background: #5cb85c; }
         button { background: #0275d8; color: white; border: none; padding: 10px 20px; font-size: 16px; border-radius: 4px; cursor: pointer; margin-top: 10px; }
         button:hover { background: #025aa5; }
-        select { padding: 8px; font-size: 14px; border-radius: 4px; margin-bottom: 10px; width: 80%; }
+        button:disabled { background: #555; cursor: not-allowed; }
+        select { padding: 8px; font-size: 14px; border-radius: 4px; margin-bottom: 10px; width: 90%; }
     </style>
 </head>
 <body>
 
     <div class="card">
-        <h2>Minecraft Server Status</h2>
-        <div id="status-badge" class="status offline">Loading...</div>
-        <p>Connector Status: <span id="connector-status">Unknown</span></p>
+        <h2>Minecraft Server Dashboard</h2>
+        <div id="status-badge" class="status offline">Checking...</div>
+        <p>Ran By: <span id="server-ran-by">None</span></p>
         
         <label for="server-select">Choose Server:</label><br>
-        <select id="server-select">
+        <select id="server-select" onchange="updateUIState()">
             <option value="SMP">SMP</option>
             <option value="SKYWARS">SKYWARS</option>
             <option value="PVP">PVP</option>
@@ -32,15 +33,14 @@
             <option value="ETC">ETC</option>
         </select>
         <br>
-        <button onclick="sendStartCommand()">Request Start (RUN)</button>
+        <button id="start-btn" onclick="requestLaunch()">Start Server</button>
     </div>
 
     <!-- Firebase Realtime Database SDK Scripts -->
     <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { initializeApp } from "https://www.firebase.com/v10/firebase-app.js"; // Replace with correct CDN if needed
         import { getDatabase, ref, onValue, update } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
-        // Your Firebase configuration (Grab from your Firebase Project Settings)
         const firebaseConfig = {
             apiKey: "YOUR_API_KEY",
             authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
@@ -54,38 +54,55 @@
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
 
-        // Listen for real-time updates to connector_status and connector_command
-        const statusRef = ref(db, '/');
-        onValue(statusRef, (snapshot) => {
-            const data = snapshot.val();
-            if (data) {
-                const badge = document.getElementById("status-badge");
-                const statusSpan = document.getElementById("connector-status");
-                
-                const currentStatus = data.connector_status || "OFFLINE";
-                statusSpan.innerText = currentStatus;
+        let globalServersData = {};
 
-                if (currentStatus === "ONLINE") {
-                    badge.className = "status online";
-                    badge.innerText = "ONLINE / READY";
-                } else {
-                    badge.className = "status offline";
-                    badge.innerText = "STOPPED / OFFLINE";
-                }
-            }
+        // Listen to the 'servers' node in real-time so each server has independent tags
+        const serversRef = ref(db, 'servers');
+        onValue(serversRef, (snapshot) => {
+            globalServersData = snapshot.val() || {};
+            updateUIState();
         });
 
-        // Function triggered when you click the button to start a server
-        window.sendStartCommand = function() {
+        window.updateUIState = function() {
             const selectedServer = document.getElementById("server-select").value;
+            const badge = document.getElementById("status-badge");
+            const ranBySpan = document.getElementById("server-ran-by");
+            const startBtn = document.getElementById("start-btn");
+
+            // Get data specific to the selected server dropdown option
+            const serverData = globalServersData[selectedServer] || {};
+            const serverStatus = serverData.ServerStatus || "Offline";
+            const serverRanBy = serverData.ServerRanBy || "None";
+
+            ranBySpan.innerText = serverRanBy;
+
+            if (serverStatus === "Running") {
+                badge.className = "status online";
+                badge.innerText = "RUNNING";
+                startBtn.disabled = true; // Prevent launching if already running
+                startBtn.innerText = "Server is Active";
+            } else {
+                badge.className = "status offline";
+                badge.innerText = "OFFLINE";
+                startBtn.disabled = false; // Allow launching
+                startBtn.innerText = "Start Server";
+            }
+        }
+
+        window.requestLaunch = function() {
+            const selectedServer = document.getElementById("server-select").value;
+            const userName = prompt("Enter your identifier (e.g., PC_A or your name):");
             
-            // Update the database command to RUN for the selected server/connector
-            update(ref(db), {
-                connector_command: "RUN",
-                // You can also log which specific sub-server is targeted if your app needs it
-                target_server: selectedServer 
+            if (!userName) return;
+
+            // Target the specific server path in Firebase
+            const serverPath = `servers/${selectedServer}`;
+            
+            update(ref(db, serverPath), {
+                ServerStatus: "Running",
+                ServerRanBy: userName
             }).then(() => {
-                alert("Command sent! Your local app should catch the 'RUN' signal and boot up.");
+                alert(`Signal sent for ${selectedServer}! Your local app should detect this and boot up.`);
             });
         }
     </script>
