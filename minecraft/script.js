@@ -102,7 +102,9 @@ document
         setConnectorState("STARTING");
 
         setTimeout(() => {
+
             setConnectorState("ONLINE");
+
         }, 1500);
 
     });
@@ -124,7 +126,9 @@ document
         setConnectorState("STARTING");
 
         setTimeout(() => {
+
             setConnectorState("ONLINE");
+
         }, 1800);
 
     });
@@ -147,33 +151,36 @@ const dropdownText =
     document.getElementById("dropdownText");
 
 
-/* Open / close */
+dropdownButton.addEventListener(
+    "click",
+    (event) => {
 
-dropdownButton.addEventListener("click", (event) => {
+        event.stopPropagation();
 
-    event.stopPropagation();
+        dropdown.classList.toggle("open");
 
-    dropdown.classList.toggle("open");
-
-});
-
-
-/* Prevent menu clicks from bubbling */
-
-dropdownMenu.addEventListener("click", (event) => {
-
-    event.stopPropagation();
-
-});
+    }
+);
 
 
-/* Close when clicking outside */
+dropdownMenu.addEventListener(
+    "click",
+    (event) => {
 
-document.addEventListener("click", () => {
+        event.stopPropagation();
 
-    dropdown.classList.remove("open");
+    }
+);
 
-});
+
+document.addEventListener(
+    "click",
+    () => {
+
+        dropdown.classList.remove("open");
+
+    }
+);
 
 
 /* =====================================================
@@ -339,10 +346,8 @@ document
             selectedServer =
                 option.dataset.server;
 
-
             dropdownText.textContent =
                 selectedServer;
-
 
             selectedServerCard.classList.remove(
                 "hidden"
@@ -358,12 +363,10 @@ document
                 "selected-server-show"
             );
 
-
             setServerState(
                 selectedServer,
                 serverStates[selectedServer]
             );
-
 
             dropdown.classList.remove("open");
 
@@ -391,7 +394,6 @@ document
             selectedServer,
             "STARTING"
         );
-
 
         setTimeout(() => {
 
@@ -451,7 +453,6 @@ document
             "STARTING"
         );
 
-
         setTimeout(() => {
 
             serverStates[selectedServer] =
@@ -465,6 +466,24 @@ document
         }, 1800);
 
     });
+
+
+/* =====================================================
+   SELF HOST
+===================================================== */
+
+const selfHostButton =
+    document.getElementById("selfHostButton");
+
+selfHostButton.addEventListener(
+    "click",
+    () => {
+
+        window.location.href =
+            "https://crisprus.run.place/sync";
+
+    }
+);
 
 
 /* =====================================================
