@@ -644,9 +644,67 @@ body {
 }
 
 
+/* =====================================================
+   SELF HOST
+===================================================== */
+
+.self-host-section {
+    margin-top: 20px;
+}
+
+.self-host-button {
+    width: 100%;
+
+    min-height: 55px;
+
+    border-radius: 14px;
+
+    border:
+        1px solid rgba(139, 92, 246, 0.28);
+
+    background:
+        rgba(139, 92, 246, 0.055);
+
+    color: #bfa8ff;
+
+    cursor: pointer;
+
+    font-size: 13px;
+
+    font-weight: 700;
+
+    letter-spacing: 1px;
+
+    transition:
+        transform 0.2s ease,
+        background 0.25s ease,
+        border-color 0.25s ease,
+        box-shadow 0.25s ease;
+}
+
+.self-host-button:hover {
+    transform: translateY(-2px);
+
+    background:
+        rgba(139, 92, 246, 0.10);
+
+    border-color:
+        rgba(139, 92, 246, 0.45);
+
+    box-shadow:
+        0 10px 35px
+        rgba(139, 92, 246, 0.08);
+}
+
+.self-host-button:active {
+    transform: scale(0.99);
+}
+
+
 /* Animations */
 
 @keyframes pulse {
+
     0% {
         opacity: 1;
         transform: scale(1);
@@ -664,6 +722,7 @@ body {
 }
 
 @keyframes stateChange {
+
     0% {
         transform: scale(0.985);
     }
@@ -678,6 +737,7 @@ body {
 }
 
 @keyframes serverAppear {
+
     from {
         opacity: 0;
         transform: translateY(-10px);
