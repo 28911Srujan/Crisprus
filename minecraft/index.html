@@ -3,12 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Minecraft Server Control</title>
+    <title>Server Control</title>
     <link rel="stylesheet" href="style.css">
-    
-    <!-- Firebase Compatibility Scripts -->
-    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
 </head>
 
 <body>
@@ -20,208 +16,196 @@
 
     <!-- MAIN CONNECTOR -->
     <section class="server-card glass">
+
         <div class="server-top">
+
             <div>
                 <div class="label">MAIN CONNECTOR</div>
                 <h1>Main Connector</h1>
                 <p class="subtext">Controls the main server machine</p>
             </div>
+
             <div id="connectorBadge" class="status-badge offline">
                 <span class="status-dot"></span>
                 <span id="connectorStatus">OFFLINE</span>
             </div>
+
         </div>
 
         <div id="connectorStatusCard" class="status-card offline">
-            <div id="connectorSymbol" class="status-symbol">●</div>
+
+            <div id="connectorSymbol" class="status-symbol">
+                ●
+            </div>
+
             <div>
                 <div class="label">STATUS</div>
                 <h2 id="connectorTitle">Offline</h2>
-                <p id="connectorDescription">The main connector is currently offline.</p>
+                <p id="connectorDescription">
+                    The main connector is currently offline.
+                </p>
             </div>
+
         </div>
 
         <div class="controls">
-            <button id="connectorOn" class="control-btn on" onclick="setConnectorCommand('START')"><span>▶</span> ON</button>
-            <button id="connectorOff" class="control-btn off" onclick="setConnectorCommand('STOP')"><span>■</span> OFF</button>
-            <button id="connectorRestart" class="control-btn restart" onclick="setConnectorCommand('RESTART')"><span>↻</span> RESTART</button>
+
+            <button id="connectorOn" class="control-btn on" type="button">
+                <span>▶</span>
+                ON
+            </button>
+
+            <button id="connectorOff" class="control-btn off" type="button">
+                <span>■</span>
+                OFF
+            </button>
+
+            <button id="connectorRestart" class="control-btn restart" type="button">
+                <span>↻</span>
+                RESTART
+            </button>
+
         </div>
+
     </section>
+
 
     <!-- SERVERS DROPDOWN -->
     <section class="servers-section">
+
         <div class="label">SERVERS</div>
+
         <div id="dropdown" class="dropdown">
-            <button id="dropdownButton" class="dropdown-button" type="button">
+
+            <button
+                id="dropdownButton"
+                class="dropdown-button"
+                type="button"
+            >
                 <span id="dropdownText">Choose a server</span>
                 <span id="dropdownArrow">⌄</span>
             </button>
+
             <div id="dropdownMenu" class="dropdown-menu">
-                <button class="server-option" data-server="PVP">PVP</button>
-                <button class="server-option" data-server="SMP">SMP</button>
-                <button class="server-option" data-server="SKYWARS">SKYWARS</button>
-                <button class="server-option" data-server="MINIGAME">MINIGAME</button>
-                <button class="server-option" data-server="ETC">ETC</button>
-                <button class="server-option" data-server="PILLARS OF FORTUNE">PILLARS OF FORTUNE</button>
+
+                <button class="server-option" data-server="PVP" type="button">
+                    PVP
+                </button>
+
+                <button class="server-option" data-server="SMP" type="button">
+                    SMP
+                </button>
+
+                <button class="server-option" data-server="SKYWARS" type="button">
+                    SKYWARS
+                </button>
+
+                <button class="server-option" data-server="MINIGAME" type="button">
+                    MINIGAME
+                </button>
+
+                <button class="server-option" data-server="ETC" type="button">
+                    ETC
+                </button>
+
+                <button class="server-option" data-server="PILLARS OF FORTUNE" type="button">
+                    PILLARS OF FORTUNE
+                </button>
+
             </div>
+
         </div>
+
     </section>
 
+
     <!-- SELECTED SERVER -->
-    <section id="selectedServerCard" class="server-card glass hidden">
+    <section
+        id="selectedServerCard"
+        class="server-card glass hidden"
+    >
+
         <div class="server-top">
+
             <div>
                 <div class="label">SERVER</div>
                 <h1 id="selectedServerName">PVP</h1>
             </div>
+
             <div id="serverBadge" class="status-badge offline">
+
                 <span class="status-dot"></span>
-                <span id="serverStatus">OFFLINE</span>
+
+                <span id="serverStatus">
+                    OFFLINE
+                </span>
+
             </div>
+
         </div>
+
 
         <div id="serverStatusCard" class="status-card offline">
-            <div id="serverSymbol" class="status-symbol">●</div>
-            <div>
-                <div class="label">STATUS</div>
-                <h2 id="serverTitle">Offline</h2>
-                <p id="serverDescription">This server is currently stopped.</p>
+
+            <div id="serverSymbol" class="status-symbol">
+                ●
             </div>
+
+            <div>
+
+                <div class="label">STATUS</div>
+
+                <h2 id="serverTitle">
+                    Offline
+                </h2>
+
+                <p id="serverDescription">
+                    This server is currently stopped.
+                </p>
+
+            </div>
+
         </div>
 
+
         <div class="controls">
-            <button id="serverOn" class="control-btn on" onclick="setServerCommand('START')"><span>▶</span> ON</button>
-            <button id="serverOff" class="control-btn off" onclick="setServerCommand('STOP')"><span>■</span> OFF</button>
-            <button id="serverRestart" class="control-btn restart" onclick="setServerCommand('RESTART')"><span>↻</span> RESTART</button>
+
+            <button id="serverOn" class="control-btn on" type="button">
+                <span>▶</span>
+                ON
+            </button>
+
+            <button id="serverOff" class="control-btn off" type="button">
+                <span>■</span>
+                OFF
+            </button>
+
+            <button id="serverRestart" class="control-btn restart" type="button">
+                <span>↻</span>
+                RESTART
+            </button>
+
         </div>
+
+    </section>
+
+
+    <!-- SELF HOST -->
+    <section class="self-host-section">
+
+        <button
+            id="selfHostButton"
+            class="self-host-button"
+            type="button"
+        >
+            SELF HOST
+        </button>
+
     </section>
 
 </main>
 
-<!-- Firebase Connection & UI Binding Script -->
-<script>
-    const firebaseConfig = {
-        apiKey: "AIzaSyAVJAuVwWbLlTbeRsa8bxnuTd0ajQMD4u4",
-        authDomain: "aio-webcontrol.firebaseapp.com",
-        databaseURL: "https://aio-webcontrol-default-rtdb.asia-southeast1.firebasedatabase.app",
-        projectId: "aio-webcontrol",
-        storageBucket: "aio-webcontrol.firebasestorage.app",
-        messagingSenderId: "588457288600",
-        appId: "1:588457288600:web:70458e157ee40f1dbfc1ed",
-        measurementId: "G-LL3F636K9Z"
-    };
-
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.database();
-
-    let selectedServerKey = null;
-
-    // UI Helper Functions for Connector State
-    function updateConnectorUI(status) {
-        connectorBadge.className = `status-badge ${status.toLowerCase()}`;
-        connectorStatusCard.className = `status-card ${status.toLowerCase()} state-change`;
-        connectorStatus.textContent = status;
-        connectorTitle.textContent = status.charAt(0) + status.slice(1).toLowerCase();
-        connectorSymbol.textContent = (status === "STARTING") ? "◌" : "●";
-        connectorDescription.textContent = `The main connector is ${status.toLowerCase()}.`;
-    }
-
-    // UI Helper Functions for Individual Server State
-    function updateServerUI(status) {
-        if (!selectedServerKey) return;
-        serverBadge.className = `status-badge ${status.toLowerCase()}`;
-        serverStatusCard.className = `status-card ${status.toLowerCase()} state-change`;
-        serverStatus.textContent = status;
-        serverTitle.textContent = status.charAt(0) + status.slice(1).toLowerCase();
-        serverSymbol.textContent = (status === "STARTING") ? "◌" : "●";
-        serverDescription.textContent = `This server is ${status.toLowerCase()}.`;
-    }
-
-    // Listen to Main Connector Status from Firebase
-    db.ref('connector_status').on('value', (snapshot) => {
-        const val = snapshot.val() || "OFFLINE";
-        updateConnectorUI(val);
-    });
-
-    // Send Commands for Connector
-    window.setConnectorCommand = (cmd) => {
-        db.ref('connector_command').set(cmd);
-        if(cmd === 'START' || cmd === 'RESTART') updateConnectorUI("STARTING");
-        if(cmd === 'STOP') updateConnectorUI("OFFLINE");
-    };
-
-    // Listen to Individual Server Statuses from Firebase
-    db.ref('servers').on('value', (snapshot) => {
-        const serversData = snapshot.val() || {};
-        if (selectedServerKey && serversData[selectedServerKey]) {
-            updateServerUI(serversData[selectedServerKey].status || "OFFLINE");
-        }
-    });
-
-    // Send Commands for Selected Specific Server
-    window.setServerCommand = (cmd) => {
-        if (!selectedServerKey) return;
-        db.ref(`servers/${selectedServerKey}/command`).set(cmd);
-        if(cmd === 'START' || cmd === 'RESTART') updateServerUI("STARTING");
-        if(cmd === 'STOP') updateServerUI("OFFLINE");
-    };
-
-    // Dropdown Logic & Interaction UI Bindings
-    const dropdown = document.getElementById("dropdown");
-    const dropdownButton = document.getElementById("dropdownButton");
-    const dropdownMenu = document.getElementById("dropdownMenu");
-    const dropdownText = document.getElementById("dropdownText");
-    const selectedServerCard = document.getElementById("selectedServerCard");
-    const selectedServerName = document.getElementById("selectedServerName");
-
-    const connectorBadge = document.getElementById("connectorBadge");
-    const connectorStatus = document.getElementById("connectorStatus");
-    const connectorStatusCard = document.getElementById("connectorStatusCard");
-    const connectorSymbol = document.getElementById("connectorSymbol");
-    const connectorTitle = document.getElementById("connectorTitle");
-    const connectorDescription = document.getElementById("connectorDescription");
-
-    const serverBadge = document.getElementById("serverBadge");
-    const serverStatus = document.getElementById("serverStatus");
-    const serverStatusCard = document.getElementById("serverStatusCard");
-    const serverSymbol = document.getElementById("serverSymbol");
-    const serverTitle = document.getElementById("serverTitle");
-    const serverDescription = document.getElementById("serverDescription");
-
-    dropdownButton.addEventListener("click", (e) => {
-        e.stopPropagation();
-        dropdown.classList.toggle("open");
-    });
-
-    dropdownMenu.addEventListener("click", (e) => {
-        e.stopPropagation();
-    });
-
-    document.addEventListener("click", () => {
-        dropdown.classList.remove("open");
-    });
-
-    document.querySelectorAll(".server-option").forEach(option => {
-        option.addEventListener("click", () => {
-            const serverName = option.dataset.server;
-            selectedServerKey = serverName.replace(/\s+/g, '_'); // Safe Firebase key format
-            dropdownText.textContent = serverName;
-            selectedServerName.textContent = serverName;
-
-            selectedServerCard.classList.remove("hidden", "selected-server-show");
-            void selectedServerCard.offsetWidth;
-            selectedServerCard.classList.add("selected-server-show");
-
-            // Fetch current state of this server from database snapshot
-            db.ref(`servers/${selectedServerKey}/status`).once('value', (snapshot) => {
-                const status = snapshot.val() || "OFFLINE";
-                updateServerUI(status);
-            });
-
-            dropdown.classList.remove("open");
-        });
-    });
-</script>
+<script src="script.js"></script>
 
 </body>
 </html>
