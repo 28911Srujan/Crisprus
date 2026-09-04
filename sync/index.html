@@ -4,44 +4,86 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Minecraft Server Dashboard</title>
-    <style>
-        body { font-family: Arial, sans-serif; text-align: center; background: #1e1e1e; color: white; margin-top: 50px; }
-        .card { background: #2d2d2d; padding: 20px; border-radius: 8px; display: inline-block; box-shadow: 0 4px 8px rgba(0,0,0,0.3); width: 380px; }
-        .status { font-weight: bold; padding: 5px 10px; border-radius: 4px; display: inline-block; margin-bottom: 15px; }
-        .offline { background: #d9534f; }
-        .online { background: #5cb85c; }
-        button { background: #0275d8; color: white; border: none; padding: 10px 20px; font-size: 16px; border-radius: 4px; cursor: pointer; margin-top: 10px; }
-        button:hover { background: #025aa5; }
-        button:disabled { background: #555; cursor: not-allowed; }
-        select { padding: 8px; font-size: 14px; border-radius: 4px; margin-bottom: 10px; width: 90%; }
-    </style>
+    <link rel="stylesheet" href="style.css">
 </head>
+
 <body>
 
-    <div class="card">
-        <h2>Minecraft Server Dashboard</h2>
-        <div id="status-badge" class="status offline">Checking...</div>
-        <p>Ran By: <span id="server-ran-by">None</span></p>
-        
-        <label for="server-select">Choose Server:</label><br>
-        <select id="server-select" onchange="updateUIState()">
-            <option value="SMP">SMP</option>
-            <option value="SKYWARS">SKYWARS</option>
-            <option value="PVP">PVP</option>
-            <option value="MINIGAME">MINIGAME</option>
-            <option value="PILLARS_OF_FORTUNE">PILLARS OF FORTUNE</option>
-            <option value="ETC">ETC</option>
-        </select>
-        <br>
-        <button id="start-btn" onclick="requestLaunch()">Start Server</button>
-    </div>
+<div class="glow glow-1"></div>
+<div class="glow glow-2"></div>
 
-    <!-- Firebase Realtime Database SDK Scripts -->
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getDatabase, ref, onValue, update } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+<main class="container">
 
-        const firebaseConfig = {
+    <!-- SELECTED SERVER CONTROL CARD -->
+    <section class="server-card glass">
+
+        <div class="server-top">
+
+            <div>
+                <div class="label">MINECRAFT SERVER</div>
+                <h1 id="selectedServerTitle">SMP</h1>
+                <p class="subtext">Ran By: <span id="server-ran-by">None</span></p>
+            </div>
+
+            <div id="serverBadge" class="status-badge offline">
+                <span class="status-dot"></span>
+                <span id="serverStatus">OFFLINE</span>
+            </div>
+
+        </div>
+
+        <div id="serverStatusCard" class="status-card offline">
+
+            <div id="serverSymbol" class="status-symbol">
+                ●
+            </div>
+
+            <div>
+                <div class="label">STATUS</div>
+                <h2 id="serverTitle">Offline</h2>
+                <p id="serverDescription">
+                    This server is currently stopped.
+                </p>
+            </div>
+
+        </div>
+
+        <!-- SERVERS DROPDOWN -->
+        <div class="servers-section" style="margin-top: 20px;">
+            <div class="label" style="margin-bottom: 8px;">CHOOSE SERVER</div>
+            <div id="dropdown" class="dropdown">
+                <button id="dropdownButton" class="dropdown-button" type="button">
+                    <span id="dropdownText">SMP</span>
+                    <span id="dropdownArrow">⌄</span>
+                </button>
+                <div id="dropdownMenu" class="dropdown-menu">
+                    <button class="server-option" data-server="SMP" type="button">SMP</button>
+                    <button class="server-option" data-server="SKYWARS" type="button">SKYWARS</button>
+                    <button class="server-option" data-server="PVP" type="button">PVP</button>
+                    <button class="server-option" data-server="MINIGAME" type="button">MINIGAME</button>
+                    <button class="server-option" data-server="PILLARS_OF_FORTUNE" type="button">PILLARS OF FORTUNE</button>
+                    <button class="server-option" data-server="ETC" type="button">ETC</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="controls" style="grid-template-columns: 1fr; margin-top: 20px;">
+            <button id="start-btn" class="control-btn on" type="button" onclick="requestLaunch()">
+                <span>▶</span>
+                <span id="startBtnText">START SERVER</span>
+            </button>
+        </div>
+
+    </section>
+
+</main>
+
+<!-- Firebase Realtime Database SDK Scripts -->
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getDatabase, ref, onValue, update } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+
+    const firebaseConfig = {
         apiKey: "AIzaSyAVJAuVwWbLlTbeRsa8bxnuTd0ajQMD4u4",
         authDomain: "aio-webcontrol.firebaseapp.com",
         databaseURL: "https://aio-webcontrol-default-rtdb.asia-southeast1.firebasedatabase.app",
@@ -52,60 +94,98 @@
         measurementId: "G-LL3F636K9Z"
     };
 
-        const app = initializeApp(firebaseConfig);
-        const db = getDatabase(app);
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
 
-        let globalServersData = {};
+    let globalServersData = {};
+    let currentSelectedServer = "SMP";
 
-        // Listen to the 'servers' node in real-time so each server has independent tags
-        const serversRef = ref(db, 'servers');
-        onValue(serversRef, (snapshot) => {
-            globalServersData = snapshot.val() || {};
+    // Dropdown UI Logic
+    const dropdown = document.getElementById('dropdown');
+    const dropdownButton = document.getElementById('dropdownButton');
+    const dropdownText = document.getElementById('dropdownText');
+
+    dropdownButton.addEventListener('click', () => {
+        dropdown.classList.toggle('open');
+    });
+
+    window.addEventListener('click', (e) => {
+        if (!dropdown.contains(e.target)) {
+            dropdown.classList.remove('open');
+        }
+    });
+
+    const serverOptions = document.querySelectorAll('.server-option');
+    serverOptions.forEach(option => {
+        option.addEventListener('click', () => {
+            currentSelectedServer = option.getAttribute('data-server');
+            dropdownText.textContent = currentSelectedServer;
+            document.getElementById('selectedServerTitle').textContent = currentSelectedServer;
+            dropdown.classList.remove('open');
             updateUIState();
         });
+    });
 
-        window.updateUIState = function() {
-            const selectedServer = document.getElementById("server-select").value;
-            const badge = document.getElementById("status-badge");
-            const ranBySpan = document.getElementById("server-ran-by");
-            const startBtn = document.getElementById("start-btn");
+    // Listen to Firebase real-time updates
+    const serversRef = ref(db, 'servers');
+    onValue(serversRef, (snapshot) => {
+        globalServersData = snapshot.val() || {};
+        updateUIState();
+    });
 
-            // Get data specific to the selected server dropdown option
-            const serverData = globalServersData[selectedServer] || {};
-            const serverStatus = serverData.ServerStatus || "Offline";
-            const serverRanBy = serverData.ServerRanBy || "None";
+    function updateUIState() {
+        const badge = document.getElementById("serverBadge");
+        const card = document.getElementById("serverStatusCard");
+        const statusText = document.getElementById("serverStatus");
+        const title = document.getElementById("serverTitle");
+        const desc = document.getElementById("serverDescription");
+        const ranBySpan = document.getElementById("server-ran-by");
+        const startBtn = document.getElementById("start-btn");
+        const startBtnText = document.getElementById("startBtnText");
 
-            ranBySpan.innerText = serverRanBy;
+        const serverData = globalServersData[currentSelectedServer] || {};
+        const serverStatus = serverData.ServerStatus || "Offline";
+        const serverRanBy = serverData.ServerRanBy || "None";
 
-            if (serverStatus === "Running") {
-                badge.className = "status online";
-                badge.innerText = "RUNNING";
-                startBtn.disabled = true; // Prevent launching if already running
-                startBtn.innerText = "Server is Active";
-            } else {
-                badge.className = "status offline";
-                badge.innerText = "OFFLINE";
-                startBtn.disabled = false; // Allow launching
-                startBtn.innerText = "Start Server";
-            }
+        ranBySpan.innerText = serverRanBy;
+
+        if (serverStatus === "Running") {
+            badge.className = "status-badge online";
+            card.className = "status-card online";
+            statusText.innerText = "RUNNING";
+            title.innerText = "Running";
+            desc.innerText = `Server is active and managed by ${serverRanBy}.`;
+            startBtn.disabled = true;
+            startBtn.style.opacity = "0.6";
+            startBtn.style.cursor = "not-allowed";
+            startBtnText.innerText = "SERVER IS ACTIVE";
+        } else {
+            badge.className = "status-badge offline";
+            card.className = "status-card offline";
+            statusText.innerText = "OFFLINE";
+            title.innerText = "Offline";
+            desc.innerText = "This server is currently stopped.";
+            startBtn.disabled = false;
+            startBtn.style.opacity = "1";
+            startBtn.style.cursor = "pointer";
+            startBtnText.innerText = "START SERVER";
         }
+    }
 
-        window.requestLaunch = function() {
-            const selectedServer = document.getElementById("server-select").value;
-            const userName = prompt("Enter your identifier (e.g., PC_A or your name):");
-            
-            if (!userName) return;
+    window.requestLaunch = function() {
+        const userName = prompt("Enter your identifier (e.g., PC_A or your name):");
+        if (!userName) return;
 
-            // Target the specific server path in Firebase
-            const serverPath = `servers/${selectedServer}`;
-            
-            update(ref(db, serverPath), {
-                ServerStatus: "Running",
-                ServerRanBy: userName
-            }).then(() => {
-                alert(`Signal sent for ${selectedServer}! Your local app should detect this and boot up.`);
-            });
-        }
-    </script>
+        const serverPath = `servers/${currentSelectedServer}`;
+        
+        update(ref(db, serverPath), {
+            ServerStatus: "Running",
+            ServerRanBy: userName
+        }).then(() => {
+            alert(`Signal sent for ${currentSelectedServer}! Your local app should detect this and boot up.`);
+        });
+    }
+</script>
+
 </body>
 </html>
