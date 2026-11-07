@@ -79,7 +79,7 @@
     const owner = '28911srujan';
     const repo = 'Crisprus';
     const branch = 'main';
-    const token = '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';
+    const token = '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';
 
     function init() {
       fetchFiles();
@@ -106,7 +106,7 @@
         const url = `https://api.github.com/repos/${owner}/${repo}/contents/${file.name}`;
         
         let sha = null;
-        const checkRes = await fetch(url, { headers: { Authorization: `token ${token}` } });
+        const checkRes = await fetch(url, { headers: { Authorization: `Bearer ${token}` } });
         if (checkRes.ok) {
           const existingData = await checkRes.json();
           sha = existingData.sha;
@@ -122,7 +122,7 @@
         const res = await fetch(url, {
           method: 'PUT',
           headers: {
-            Authorization: `token ${token}`,
+            Authorization: `Bearer ${token}`,
             'Content-Type': 'application/json'
           },
           body: JSON.stringify(bodyData)
@@ -151,7 +151,7 @@
 
       try {
         const res = await fetch(`https://api.github.com/repos/${owner}/${repo}/contents?ref=${branch}`, {
-          headers: { Authorization: `token ${token}` }
+          headers: { Authorization: `Bearer ${token}` }
         });
 
         if (!res.ok) throw new Error('Could not fetch repo contents');
@@ -216,6 +216,7 @@
       }
     }
 
+    function closePress() { closePreview(); }
     function closePreview() {
       document.getElementById('previewModal').classList.add('hidden');
     }
@@ -226,7 +227,7 @@
       const res = await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/${filename}`, {
         method: 'DELETE',
         headers: {
-          Authorization: `token ${token}`,
+          Authorization: `Bearer ${token}`,
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
