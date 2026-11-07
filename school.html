@@ -13,7 +13,23 @@
 </head>
 <body class="bg-slate-900 text-slate-100 min-h-screen p-4 flex flex-col items-center justify-center font-sans">
 
-  <div class="w-full max-w-xl bg-slate-800 border border-slate-700 rounded-xl p-6 shadow-2xl space-y-6">
+  <!-- Login Gate Screen -->
+  <div id="loginSection" class="w-full max-w-sm bg-slate-800 border border-slate-700 rounded-xl p-6 shadow-2xl space-y-4">
+    <div class="text-center space-y-1">
+      <h1 class="text-xl font-bold text-white">Crisprus Vault</h1>
+      <p class="text-xs text-slate-400">Enter password to access secure storage</p>
+    </div>
+    <div class="space-y-3">
+      <input type="password" id="vaultPassword" placeholder="Enter password..." class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-indigo-500">
+      <button onclick="checkPassword()" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-semibold py-2 rounded-lg text-sm transition shadow-lg">
+        Unlock Vault
+      </button>
+      <p id="loginError" class="text-xs text-center text-red-400 hidden">Incorrect password!</p>
+    </div>
+  </div>
+
+  <!-- Main Application UI (Hidden by default until login) -->
+  <div id="appSection" class="w-full max-w-xl bg-slate-800 border border-slate-700 rounded-xl p-6 shadow-2xl space-y-6 hidden">
     
     <!-- Title & Target Repo -->
     <div class="flex items-center justify-between border-b border-slate-700 pb-4">
@@ -21,41 +37,39 @@
         <h1 class="text-xl font-bold text-white">Crisprus Vault</h1>
         <p class="text-xs text-indigo-400 mt-0.5">Target Repo: <span class="font-mono text-slate-300">28911srujan/Crisprus</span></p>
       </div>
-      <span class="text-xs text-emerald-400 bg-emerald-950 px-2.5 py-1 rounded border border-emerald-800 font-medium">Token Active</span>
+      <div class="flex items-center gap-3">
+        <span class="text-xs text-emerald-400 bg-emerald-950 px-2.5 py-1 rounded border border-emerald-800 font-medium">Token Active</span>
+        <button onclick="lockVault()" class="text-xs text-slate-400 hover:text-red-400 transition">Lock</button>
+      </div>
     </div>
 
-    <!-- Main Application UI -->
-    <div id="appSection" class="space-y-6">
-      
-      <!-- Upload Box -->
-      <div class="space-y-2">
-        <label class="block text-xs font-semibold text-slate-300">Upload File</label>
-        <div class="border-2 border-dashed border-slate-600 hover:border-indigo-500 bg-slate-900/50 rounded-xl p-6 text-center cursor-pointer transition relative">
-          <input type="file" id="fileInput" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer" onchange="updateFileLabel()">
-          <p id="fileLabel" class="text-sm text-slate-400">Click or drag file here to select</p>
-        </div>
-        <button onclick="uploadFile()" id="uploadBtn" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-semibold py-2.5 rounded-lg text-sm transition shadow-lg flex items-center justify-center gap-2">
-          Upload Confirm
-        </button>
+    <!-- Upload Box -->
+    <div class="space-y-2">
+      <label class="block text-xs font-semibold text-slate-300">Upload File</label>
+      <div class="border-2 border-dashed border-slate-600 hover:border-indigo-500 bg-slate-900/50 rounded-xl p-6 text-center cursor-pointer transition relative">
+        <input type="file" id="fileInput" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer" onchange="updateFileLabel()">
+        <p id="fileLabel" class="text-sm text-slate-400">Click or drag file here to select</p>
       </div>
-
-      <!-- File Manager Box -->
-      <div class="space-y-3">
-        <div class="flex justify-between items-center">
-          <h2 class="text-xs font-semibold text-slate-300">Files in Repository</h2>
-          <button onclick="fetchFiles()" class="text-xs text-indigo-400 hover:underline">Refresh List</button>
-        </div>
-        <div id="fileList" class="bg-slate-900 border border-slate-700 rounded-lg divide-y divide-slate-800 max-h-64 overflow-y-auto">
-          <p class="text-center py-4 text-xs text-slate-500">Loading files...</p>
-        </div>
-      </div>
-
+      <button onclick="uploadFile()" id="uploadBtn" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-semibold py-2.5 rounded-lg text-sm transition shadow-lg flex items-center justify-center gap-2">
+        Upload Confirm
+      </button>
     </div>
 
-    <!-- Status Message -->
-    <div id="statusMsg" class="hidden text-xs text-center p-2 rounded-lg"></div>
+    <!-- File Manager Box -->
+    <div class="space-y-3">
+      <div class="flex justify-between items-center">
+        <h2 class="text-xs font-semibold text-slate-300">Files in Repository</h2>
+        <button onclick="fetchFiles()" class="text-xs text-indigo-400 hover:underline">Refresh List</button>
+      </div>
+      <div id="fileList" class="bg-slate-900 border border-slate-700 rounded-lg divide-y divide-slate-800 max-h-64 overflow-y-auto">
+        <p class="text-center py-4 text-xs text-slate-500">Loading files...</p>
+      </div>
+    </div>
 
   </div>
+
+  <!-- Status Message -->
+  <div id="statusMsg" class="hidden text-xs text-center p-2 rounded-lg mt-4 max-w-xl w-full"></div>
 
   <!-- Preview Modal -->
   <div id="previewModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
@@ -79,11 +93,35 @@
     const owner = '28911srujan';
     const repo = 'Crisprus';
     const branch = 'main';
-    const folderPath = 'vault'; // Target folder for all vault files
+    const folderPath = 'vault';
     const token = 'ghp_p4dDEQr3TbNG' + 'Mi57j4swpvspSICfyJ2ifvGL';
+    
+    // Hardcoded password for the vault
+    const vaultPassword = 'crisprus123'; // Change this to your desired password
 
-    function init() {
-      fetchFiles();
+    // Allow pressing 'Enter' to submit password
+    document.getElementById('vaultPassword').addEventListener('keypress', function (e) {
+      if (e.key === 'Enter') checkPassword();
+    });
+
+    function checkPassword() {
+      const inputVal = document.getElementById('vaultPassword').value;
+      const errorEl = document.getElementById('loginError');
+
+      if (inputVal === vaultPassword) {
+        document.getElementById('loginSection').classList.add('hidden');
+        document.getElementById('appSection').classList.remove('hidden');
+        errorEl.classList.add('hidden');
+        document.getElementById('vaultPassword').value = '';
+        fetchFiles();
+      } else {
+        errorEl.classList.remove('hidden');
+      }
+    }
+
+    function lockVault() {
+      document.getElementById('appSection').classList.add('hidden');
+      document.getElementById('loginSection').classList.remove('hidden');
     }
 
     function updateFileLabel() {
@@ -120,7 +158,14 @@
         };
         if (sha) bodyData.sha = sha;
 
-        const res = await fetch(url, {
+        const res = toFetchWithAuth(url, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(bodyData)
+        });
+
+        // Simplified fetch call with token header
+        const uploadRes = await fetch(url, {
           method: 'PUT',
           headers: {
             Authorization: `Bearer ${token}`,
@@ -129,13 +174,13 @@
           body: JSON.stringify(bodyData)
         });
 
-        if (res.ok) {
+        if (uploadRes.ok) {
           showStatus(`Success! Saved ${file.name} to folder '${folderPath}'.`, 'green');
           document.getElementById('fileInput').value = '';
           document.getElementById('fileLabel').innerText = 'Click or drag file here to select';
           fetchFiles();
         } else {
-          const err = await res.json();
+          const err = await uploadRes.json();
           showStatus(`Upload failed: ${err.message}`, 'red');
         }
       } catch (e) {
@@ -266,8 +311,6 @@
       el.classList.remove('hidden');
       setTimeout(() => el.classList.add('hidden'), 4000);
     }
-
-    init();
   </script>
 </body>
 </html>
