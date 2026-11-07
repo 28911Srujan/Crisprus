@@ -96,8 +96,8 @@
     const folderPath = 'vault';
     const token = 'ghp_p4dDEQr3TbNG' + 'Mi57j4swpvspSICfyJ2ifvGL';
     
-    // Hardcoded password for the vault
-    const vaultPassword = 'GarbageMachiALT is g*y'; // Change this to your desired password
+    // Hardcoded password for the vault (can include spaces if needed)
+    const vaultPassword = 'crisprus123';
 
     // Allow pressing 'Enter' to submit password
     document.getElementById('vaultPassword').addEventListener('keypress', function (e) {
@@ -158,13 +158,6 @@
         };
         if (sha) bodyData.sha = sha;
 
-        const res = toFetchWithAuth(url, {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(bodyData)
-        });
-
-        // Simplified fetch call with token header
         const uploadRes = await fetch(url, {
           method: 'PUT',
           headers: {
